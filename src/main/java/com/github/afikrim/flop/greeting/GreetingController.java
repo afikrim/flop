@@ -4,8 +4,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import com.github.afikrim.flop.users.UserController;
-import com.github.afikrim.flop.utils.Response;
-import com.github.afikrim.flop.utils.ResponseCode;
+import com.github.afikrim.flop.utils.response.Response;
+import com.github.afikrim.flop.utils.response.ResponseCode;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;

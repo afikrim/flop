@@ -5,8 +5,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
 
-import com.github.afikrim.flop.utils.Response;
-import com.github.afikrim.flop.utils.ResponseCode;
+import com.github.afikrim.flop.utils.response.Response;
+import com.github.afikrim.flop.utils.response.ResponseCode;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;

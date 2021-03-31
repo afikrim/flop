@@ -1,6 +1,9 @@
-package com.github.afikrim.flop.utils;
+package com.github.afikrim.flop.utils.exception;
 
 import javax.persistence.EntityNotFoundException;
+
+import com.github.afikrim.flop.utils.response.Response;
+import com.github.afikrim.flop.utils.response.ResponseCode;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -23,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
 @Slf4j
-public class ErrorHandler extends ResponseEntityExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     /**
      * Handle MissingServletRequestParameterException. Triggered when a 'required'
@@ -76,7 +79,6 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * Handles DataIntegrityViolationException. Create
      * Handles DataIntegrityViolationException. Created to encapsulate errors with more
      * detail than org.springframework.dao.DataIntegrityViolationException.
      * 
@@ -143,6 +145,20 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         Response<Object> response = new Response<>(false, ResponseCode.METHOD_NOT_ALLOWED, message, null);
 
         return ResponseEntity.status(status).headers(headers).body(response);
+    }
+
+    /**
+     * Handles Exception. Created to encapsulate errors with more
+     * detail than Exception.
+     * 
+     * @param ex the Exception
+     * @return
+     */
+    @ExceptionHandler(Exception.class)
+    protected ResponseEntity<Object> handleUnknownException(Exception ex) {
+        Response<Object> response = new Response<>(false, ResponseCode.INTERNAL_SERVER_ERROR, ex.getMessage(), null);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
 }

@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.github.afikrim.flop.accounts.AccountRepository;
 import com.github.afikrim.flop.users.UserController;
 import com.github.afikrim.flop.users.UserRepository;
-import com.github.afikrim.flop.utils.ResponseCode;
+import com.github.afikrim.flop.utils.response.ResponseCode;
 
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
