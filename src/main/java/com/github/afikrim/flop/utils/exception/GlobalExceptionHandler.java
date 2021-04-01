@@ -1,10 +1,8 @@
 package com.github.afikrim.flop.utils.exception;
 
-import javax.persistence.EntityNotFoundException;
-
 import com.github.afikrim.flop.utils.response.Response;
 import com.github.afikrim.flop.utils.response.ResponseCode;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -21,7 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import lombok.extern.slf4j.Slf4j;
+import javax.persistence.EntityNotFoundException;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
@@ -40,7 +38,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @Override
     protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex,
-            HttpHeaders headers, HttpStatus status, WebRequest request) {
+                                                                          HttpHeaders headers, HttpStatus status, WebRequest request) {
         Response<Object> response = new Response<>(false, ResponseCode.BAD_REQUEST, ex.getMessage(), null);
 
         return ResponseEntity.status(status).headers(headers).body(response);
@@ -58,7 +56,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @Override
     protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex,
-            HttpHeaders headers, HttpStatus status, WebRequest request) {
+                                                                     HttpHeaders headers, HttpStatus status, WebRequest request) {
         Response<Object> response = new Response<>(false, ResponseCode.UNSUPPORTED_MEDIA_TYPE, ex.getMessage(), null);
 
         return ResponseEntity.status(status).headers(headers).body(response);
@@ -81,7 +79,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * Handles DataIntegrityViolationException. Created to encapsulate errors with more
      * detail than org.springframework.dao.DataIntegrityViolationException.
-     * 
+     *
      * @param ex the DataIntegrityViolationException
      * @return
      */
@@ -104,7 +102,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
-            HttpHeaders headers, HttpStatus status, WebRequest request) {
+                                                                  HttpHeaders headers, HttpStatus status, WebRequest request) {
         String message = "Malformed JSON request";
         Response<Object> response = new Response<>(false, ResponseCode.BAD_REQUEST, message, null);
 
@@ -122,7 +120,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotWritable(HttpMessageNotWritableException ex,
-            HttpHeaders headers, HttpStatus status, WebRequest request) {
+                                                                  HttpHeaders headers, HttpStatus status, WebRequest request) {
         String message = "Error writing JSON output";
         Response<Object> response = new Response<>(false, ResponseCode.BAD_REQUEST, message, null);
 
@@ -140,7 +138,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @Override
     protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex,
-            HttpHeaders headers, HttpStatus status, WebRequest request) {
+                                                                         HttpHeaders headers, HttpStatus status, WebRequest request) {
         String message = "Method not allowed";
         Response<Object> response = new Response<>(false, ResponseCode.METHOD_NOT_ALLOWED, message, null);
 
@@ -150,7 +148,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * Handles Exception. Created to encapsulate errors with more
      * detail than Exception.
-     * 
+     *
      * @param ex the Exception
      * @return
      */

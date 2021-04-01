@@ -22,7 +22,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Account> optionalAccount = accountRepository.getAccountWithCredential(username);
 
-        if (! optionalAccount.isPresent()) {
+        if (!optionalAccount.isPresent()) {
             throw new EntityNotFoundException("Account not found!");
         }
 

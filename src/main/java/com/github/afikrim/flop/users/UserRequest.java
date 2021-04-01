@@ -1,26 +1,25 @@
 package com.github.afikrim.flop.users;
 
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.afikrim.flop.accounts.AccountRequest;
-
 import lombok.AllArgsConstructor;
+
+import java.util.Optional;
 
 @AllArgsConstructor
 public class UserRequest {
 
     @JsonProperty("fullname")
-    private String fullname;
+    private final String fullname;
 
     @JsonProperty("email")
-    private String email;
+    private final String email;
 
     @JsonProperty("phone")
-    private String phone;
+    private final String phone;
 
     @JsonProperty("account")
-    private Optional<AccountRequest> account;
+    private final Optional<AccountRequest> account;
 
     public String getFullname() {
         return fullname;

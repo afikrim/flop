@@ -1,16 +1,12 @@
 package com.github.afikrim.flop.auth;
 
 import com.github.afikrim.flop.users.UserRequest;
-import com.github.afikrim.flop.utils.exception.CustomException;
-import com.github.afikrim.flop.utils.jwt.JwtUtil;
 import com.github.afikrim.flop.utils.response.Response;
 import com.github.afikrim.flop.utils.response.ResponseCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
