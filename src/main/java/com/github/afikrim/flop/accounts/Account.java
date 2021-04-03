@@ -27,6 +27,9 @@ public class Account {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "is_deleted", columnDefinition = "boolean default false", nullable = false)
+    private Boolean isDeleted = false;
+
     @OneToOne(mappedBy = "account", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private User user;
 
@@ -57,6 +60,14 @@ public class Account {
     @JsonIgnore
     public String getPassword() {
         return password;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
     }
 
     @JsonIgnore

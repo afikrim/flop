@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -63,6 +64,18 @@ public class AuthController {
         User user = authService.updateProfile(userDetails.getUsername(), userRequest);
 
         Response<User> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully get user profile", user);
+
+        return ResponseEntity.ok().body(response);
+    }
+
+    @DeleteMapping(value = "/profile")
+    public ResponseEntity<Response<User>> deleteProfile() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        authService.deleteProfile(userDetails.getUsername());
+
+        Response<User> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully delete user profile", null);
 
         return ResponseEntity.ok().body(response);
     }

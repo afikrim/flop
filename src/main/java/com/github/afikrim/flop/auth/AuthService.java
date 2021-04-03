@@ -13,4 +13,6 @@ public interface AuthService {
 
     User updateProfile(String credential, UserRequest userRequest);
 
+    void deleteProfile(String credential);
+
 }

@@ -203,6 +203,23 @@ public class AuthServiceImpl implements AuthService {
         return userRepository.save(tempUser);
     }
 
+    @Override
+    public void deleteProfile(String credential) {
+        Optional<Account> optionalAccount = accountRepository.getAccountWithCredential(credential);
+        if (optionalAccount.isEmpty()) {
+            throw new EntityNotFoundException("User not found!");
+        }
+
+        Account tempAccount = optionalAccount.get();
+        User tempUser = tempAccount.getUser();
+
+        tempAccount.setIsDeleted(true);
+        tempUser.setUpdatedAt(new Date());
+
+        accountRepository.save(tempAccount);
+        userRepository.save(tempUser);
+    }
+
     private Map<String, Object> setClaims(User user) {
         Map<String, Object> payload = new HashMap<>();
         if (user.getAccount().getUsername() != null)
