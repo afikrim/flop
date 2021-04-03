@@ -1,4 +1,4 @@
-package com.github.afikrim.flop.utils;
+package com.github.afikrim.flop.utils.response;
 
 public enum ResponseCode {
 

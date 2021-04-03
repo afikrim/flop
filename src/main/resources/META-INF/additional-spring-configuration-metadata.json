@@ -1,5 +1,12 @@
-{"properties": [{
-  "name": "spring.application.version",
-  "type": "java.lang.String",
-  "description": "Application version"
-}]}
+{"properties": [
+  {
+    "name": "spring.application.version",
+    "type": "java.lang.String",
+    "description": "Application version"
+  },
+  {
+    "name": "jwt.duration",
+    "type": "java.lang.Long",
+    "description": "Jwt expired duration"
+  }
+]}
