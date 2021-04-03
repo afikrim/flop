@@ -1,5 +1,6 @@
 package com.github.afikrim.flop.users;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.afikrim.flop.accounts.Account;
 import com.github.afikrim.flop.roles.Role;
@@ -104,6 +105,7 @@ public class User extends RepresentationModel<User> implements Serializable {
         this.account = account;
     }
 
+    @JsonIgnore
     public Set<Role> getRoles() {
         return roles;
     }

@@ -3,6 +3,8 @@ package com.github.afikrim.flop.auth;
 import com.github.afikrim.flop.accounts.Account;
 import com.github.afikrim.flop.accounts.AccountRepository;
 import com.github.afikrim.flop.accounts.AccountRequest;
+import com.github.afikrim.flop.roles.Role;
+import com.github.afikrim.flop.roles.RoleRepository;
 import com.github.afikrim.flop.users.User;
 import com.github.afikrim.flop.users.UserRepository;
 import com.github.afikrim.flop.users.UserRequest;
@@ -16,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.*;
 
@@ -33,6 +36,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -62,6 +68,11 @@ public class AuthServiceImpl implements AuthService {
             throw new CustomException("Email or Phone already in used", HttpStatus.BAD_REQUEST);
         }
 
+        Optional<Role> optionalRole = roleRepository.findByCode("ROLE_USER");
+        if (optionalRole.isEmpty()) {
+            throw new CustomException("Something wrong with the server.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
         Account account = new Account();
         if (accountRequest.getUsername() != null) account.setUsername(accountRequest.getUsername());
         account.setPassword(bCryptPasswordEncoder.encode(accountRequest.getPassword()));
@@ -72,6 +83,7 @@ public class AuthServiceImpl implements AuthService {
         user.setFullname(userRequest.getFullname());
         user.setEmail(userRequest.getEmail());
         user.setPhone(userRequest.getPhone());
+        user.setRoles(new HashSet<>(Arrays.asList(optionalRole.get())));
         user.setAccount(account);
         user.setCreatedAt(new Date());
         user.setUpdatedAt(new Date());
@@ -107,6 +119,18 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtil.generateToken(claims, account.getUser().getEmail());
 
         return new AuthResponse(token);
+    }
+
+    @Override
+    public User profile(String credential) {
+        Optional<Account> optionalAccount = accountRepository.getAccountWithCredential(credential);
+        if (optionalAccount.isEmpty()) {
+            throw new EntityNotFoundException("User not found!");
+        }
+
+        Account account = optionalAccount.get();
+
+        return account.getUser();
     }
 
     private Map<String, Object> setClaims(User user) {

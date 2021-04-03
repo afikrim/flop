@@ -1,5 +1,6 @@
 package com.github.afikrim.flop.auth;
 
+import com.github.afikrim.flop.users.User;
 import com.github.afikrim.flop.users.UserRequest;
 import com.github.afikrim.flop.utils.response.Response;
 import com.github.afikrim.flop.utils.response.ResponseCode;
@@ -7,6 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +38,18 @@ public class AuthController {
         AuthResponse authResponse = authService.authenticate(authRequest.getCredential(), authRequest.getPassword());
         Response<AuthResponse> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully logged in",
                 authResponse);
+
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping(value = "/profile")
+    public ResponseEntity<Response<User>> profile() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        User user = authService.profile(userDetails.getUsername());
+
+        Response<User> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully get user profile", user);
 
         return ResponseEntity.ok().body(response);
     }

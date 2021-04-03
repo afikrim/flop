@@ -7,9 +7,6 @@ import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,20 +21,8 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    Authentication authentication;
-
-    public UserController() {
-        authentication = SecurityContextHolder.getContext().getAuthentication();
-    }
-
     @GetMapping
     public ResponseEntity<Response<List<User>>> index() {
-        authentication.getAuthorities().stream().forEach(arg -> {
-            System.out.println(arg.getAuthority());
-        });
-
-        System.out.println(authentication.getPrincipal().toString());
-
         List<User> users = userService.getAll();
         Response<List<User>> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully retrieved all users", users);
 
@@ -50,11 +35,8 @@ public class UserController {
         Response<User> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully retrieved user with id " + id,
                 user);
 
-        if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"))) {
-            Link all = linkTo(methodOn(this.getClass()).index()).withRel("all");
-
-            response.add(all);
-        }
+        Link all = linkTo(methodOn(this.getClass()).index()).withRel("all");
+        response.add(all);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -64,11 +46,8 @@ public class UserController {
         User user = userService.updateOne(id, userRequest);
         Response<User> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully update user with id " + id, user);
 
-        if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"))) {
-            Link all = linkTo(methodOn(this.getClass()).index()).withRel("all");
-
-            response.add(all);
-        }
+        Link all = linkTo(methodOn(this.getClass()).index()).withRel("all");
+        response.add(all);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -78,11 +57,8 @@ public class UserController {
         User user = userService.destroyOne(id);
         Response<User> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully destroy user", user);
 
-        if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"))) {
-            Link all = linkTo(methodOn(this.getClass()).index()).withRel("all");
-
-            response.add(all);
-        }
+        Link all = linkTo(methodOn(this.getClass()).index()).withRel("all");
+        response.add(all);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
