@@ -2,6 +2,8 @@ package com.github.afikrim.flop.users;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.afikrim.flop.accounts.Account;
+import com.github.afikrim.flop.roles.Role;
+
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -11,6 +13,7 @@ import org.springframework.hateoas.RepresentationModel;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -37,6 +40,25 @@ public class User extends RepresentationModel<User> implements Serializable {
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "account_id")
     private Account account;
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinTable(name = "user_roles", //
+            joinColumns = { //
+                    @JoinColumn(name = "user_id", //
+                            referencedColumnName = "id", //
+                            nullable = false, //
+                            updatable = false//
+                    ) //
+            }, //
+            inverseJoinColumns = { //
+                    @JoinColumn(name = "role_id", //
+                            referencedColumnName = "id", //
+                            nullable = false, //
+                            updatable = false//
+                    )//
+            }//
+    )
+    private Set<Role> roles;
 
     @CreatedDate
     @Column(name = "created_at")
@@ -80,6 +102,14 @@ public class User extends RepresentationModel<User> implements Serializable {
 
     public void setAccount(Account account) {
         this.account = account;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
     @JsonProperty("created_at")

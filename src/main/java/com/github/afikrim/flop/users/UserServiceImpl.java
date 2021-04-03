@@ -5,10 +5,8 @@ import com.github.afikrim.flop.accounts.AccountRepository;
 import com.github.afikrim.flop.accounts.AccountRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.Date;
@@ -41,43 +39,6 @@ public class UserServiceImpl implements UserService {
 
             return user;
         }).collect(Collectors.toList());
-    }
-
-    @Transactional
-    @Override
-    public User store(UserRequest userRequest) {
-        Optional<AccountRequest> optionalAccountRequest = userRequest.getAccount();
-
-        if (!optionalAccountRequest.isPresent())
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Missing field account");
-
-        AccountRequest accountRequest = optionalAccountRequest.get();
-        Account account = new Account();
-        account.setUsername(accountRequest.getUsername());
-        account.setPassword(accountRequest.getPassword());
-        account.setCreatedAt(new Date());
-        account.setUpdatedAt(new Date());
-
-        User user = new User();
-        user.setFullname(userRequest.getFullname());
-        user.setEmail(userRequest.getEmail());
-        user.setPhone(userRequest.getPhone());
-        user.setAccount(account);
-        user.setCreatedAt(new Date());
-        user.setUpdatedAt(new Date());
-
-        accountRepository.save(account);
-        userRepository.save(user);
-
-        Link self = linkTo(methodOn(UserController.class).get(user.getId())).withRel("self");
-        Link update = linkTo(methodOn(UserController.class).update(user.getId(), null)).withRel("update");
-        Link delete = linkTo(methodOn(UserController.class).destroy(user.getId())).withRel("delete");
-
-        user.add(self);
-        user.add(update);
-        user.add(delete);
-
-        return user;
     }
 
     @Override
@@ -155,6 +116,18 @@ public class UserServiceImpl implements UserService {
         accountRepository.deleteById(tempUser.getAccount().getId());
 
         return null;
+    }
+
+    public User getOneByCredential(String credential) {
+        Optional<User> optionalUser = userRepository.findByEmailOrPhone(credential, credential);
+
+        if (!optionalUser.isPresent()) {
+            throw new EntityNotFoundException("User not found.");
+        }
+
+        User user = optionalUser.get();
+
+        return user;
     }
 
 }

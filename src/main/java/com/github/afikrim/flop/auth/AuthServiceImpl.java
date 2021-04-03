@@ -11,6 +11,7 @@ import com.github.afikrim.flop.utils.jwt.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -23,10 +24,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     JwtUtil jwtUtil;
+
     @Autowired
     AuthenticationManager authenticationManager;
+
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private AccountRepository accountRepository;
 
@@ -92,16 +96,15 @@ public class AuthServiceImpl implements AuthService {
             }
 
             account = optionalAccount.get();
-
-            if (!bCryptPasswordEncoder.matches(password, account.getPassword())) {
-                throw new Exception("Bad credentials");
-            }
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(credential, password)
+            );
         } catch (Exception ex) {
             throw new CustomException(ex.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
         Map<String, Object> claims = setClaims(account.getUser());
-        String token = jwtUtil.generateToken(claims, credential);
+        String token = jwtUtil.generateToken(claims, account.getUser().getEmail());
 
         return new AuthResponse(token);
     }

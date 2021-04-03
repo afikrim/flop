@@ -1,6 +1,5 @@
 package com.github.afikrim.flop.utils.jwt;
 
-import com.github.afikrim.flop.users.UserDetailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,6 +12,9 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.github.afikrim.flop.users.details.UserDetailService;
+
 import java.io.IOException;
 
 @Component
@@ -22,26 +24,24 @@ public class JwtFilter extends OncePerRequestFilter {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private UserDetailServiceImpl userDetailService;
+    private UserDetailService userDetailService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
         String authorizationHeader = httpServletRequest.getHeader("Authorization");
 
         String token = null;
-        String userName = null;
+        String credential = null;
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             token = authorizationHeader.replace("Bearer ", "");
-            userName = jwtUtil.extractUsername(token);
+            credential = jwtUtil.extractUsername(token);
         }
 
-        if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-            UserDetails userDetails = userDetailService.loadUserByUsername(userName);
+        if (credential != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userDetailService.loadUserByUsername(credential);
 
             if (jwtUtil.validateToken(token, userDetails)) {
-
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken

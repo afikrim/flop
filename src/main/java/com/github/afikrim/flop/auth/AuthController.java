@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/auth", produces = {MediaType.APPLICATION_JSON_VALUE})
+@RequestMapping(value = "/v1/auth", produces = { MediaType.APPLICATION_JSON_VALUE })
 public class AuthController {
 
     @Autowired
@@ -22,7 +22,8 @@ public class AuthController {
     @PostMapping(value = "/register")
     public ResponseEntity<Response<AuthResponse>> register(@RequestBody UserRequest userRequest) {
         AuthResponse authResponse = authService.register(userRequest);
-        Response<AuthResponse> response = new Response<>(true, ResponseCode.CREATED, "Successfully register", authResponse);
+        Response<AuthResponse> response = new Response<>(true, ResponseCode.CREATED, "Successfully register",
+                authResponse);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -30,7 +31,8 @@ public class AuthController {
     @PostMapping(value = "/login")
     public ResponseEntity<Response<AuthResponse>> login(@RequestBody AuthRequest authRequest) {
         AuthResponse authResponse = authService.authenticate(authRequest.getCredential(), authRequest.getPassword());
-        Response<AuthResponse> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully logged in", authResponse);
+        Response<AuthResponse> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully logged in",
+                authResponse);
 
         return ResponseEntity.ok().body(response);
     }

@@ -2,6 +2,7 @@ package com.github.afikrim.flop.utils.exception;
 
 import com.github.afikrim.flop.utils.response.Response;
 import com.github.afikrim.flop.utils.response.ResponseCode;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -143,6 +144,34 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         Response<Object> response = new Response<>(false, ResponseCode.METHOD_NOT_ALLOWED, message, null);
 
         return ResponseEntity.status(status).headers(headers).body(response);
+    }
+
+    /**
+     * Handles ExpiredJwtException. Created to encapsulate errors with more
+     * detail than ExpiredJwtException.
+     *
+     * @param ex the Exception
+     * @return
+     */
+    @ExceptionHandler(ExpiredJwtException.class)
+    protected ResponseEntity<Object> handleExpiredJwtException(ExpiredJwtException ex) {
+        Response<Object> response = new Response<>(false, ResponseCode.UNAUTHORIZED, ex.getMessage(), null);
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    /**
+     * Handles CustomException. Created to encapsulate errors with more
+     * detail than CustomException.
+     *
+     * @param ex the Exception
+     * @return
+     */
+    @ExceptionHandler(CustomException.class)
+    protected ResponseEntity<Object> handleCustomException(CustomException ex) {
+        Response<Object> response = new Response<>(false, ResponseCode.BAD_REQUEST, ex.getMessage(), null);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     /**

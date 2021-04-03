@@ -7,10 +7,10 @@ import lombok.AllArgsConstructor;
 public class AccountRequest {
 
     @JsonProperty("username")
-    private final String username;
+    private String username;
 
     @JsonProperty("password")
-    private final String password;
+    private String password;
 
     public String getUsername() {
         return username;

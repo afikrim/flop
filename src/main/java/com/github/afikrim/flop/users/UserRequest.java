@@ -10,16 +10,16 @@ import java.util.Optional;
 public class UserRequest {
 
     @JsonProperty("fullname")
-    private final String fullname;
+    private String fullname;
 
     @JsonProperty("email")
-    private final String email;
+    private String email;
 
     @JsonProperty("phone")
-    private final String phone;
+    private String phone;
 
     @JsonProperty("account")
-    private final Optional<AccountRequest> account;
+    private Optional<AccountRequest> account;
 
     public String getFullname() {
         return fullname;

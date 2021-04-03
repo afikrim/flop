@@ -1,19 +1,19 @@
-package com.github.afikrim.flop.users;
+package com.github.afikrim.flop.users.details;
+
+import java.util.Optional;
+
+import javax.persistence.EntityNotFoundException;
 
 import com.github.afikrim.flop.accounts.Account;
 import com.github.afikrim.flop.accounts.AccountRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
-import java.util.ArrayList;
-import java.util.Optional;
-
 @Service
-public class UserDetailServiceImpl implements UserDetailsService {
+public class UserDetailServiceImpl implements UserDetailService {
 
     @Autowired
     private AccountRepository accountRepository;
@@ -22,12 +22,12 @@ public class UserDetailServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Account> optionalAccount = accountRepository.getAccountWithCredential(username);
 
-        if (!optionalAccount.isPresent()) {
-            throw new EntityNotFoundException("Account not found!");
+        if (optionalAccount.isEmpty()) {
+            throw new EntityNotFoundException("User not found.");
         }
 
         Account account = optionalAccount.get();
-
-        return new org.springframework.security.core.userdetails.User(username, account.getPassword(), new ArrayList<>());
+        return new UserDetail(account.getUser());
     }
+
 }

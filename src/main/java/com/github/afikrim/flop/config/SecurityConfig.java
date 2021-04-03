@@ -1,18 +1,19 @@
 package com.github.afikrim.flop.config;
 
-import com.github.afikrim.flop.users.UserDetailServiceImpl;
+import com.github.afikrim.flop.users.details.UserDetailService;
 import com.github.afikrim.flop.utils.jwt.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -21,19 +22,32 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private UserDetailServiceImpl userDetailService;
+    private UserDetailService userDetailService;
 
     @Autowired
     private JwtFilter jwtFilter;
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailService);
+    public UserDetailService getUserDetailService() {
+        return userDetailService;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setUserDetailsService(getUserDetailService());
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+
+        return daoAuthenticationProvider;
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(daoAuthenticationProvider());
     }
 
     @Bean(name = BeanIds.AUTHENTICATION_MANAGER)
@@ -47,8 +61,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf()//
                 .disable()//
                 .authorizeRequests()//
-                .antMatchers("/", "/auth/**")
-                .permitAll()//
+                .antMatchers("/", "/v1/auth/**").permitAll()//
+                .antMatchers("/v1/users").hasAnyAuthority("ADMIN")//
+                .antMatchers("/v1/users/**").hasAnyAuthority("ADMIN", "USER")//
                 .anyRequest()//
                 .authenticated()//
                 .and()//
