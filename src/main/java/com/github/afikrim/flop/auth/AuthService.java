@@ -11,4 +11,6 @@ public interface AuthService {
 
     User profile(String credential);
 
+    User updateProfile(String credential, UserRequest userRequest);
+
 }

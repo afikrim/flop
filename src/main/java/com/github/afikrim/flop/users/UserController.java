@@ -41,17 +41,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PutMapping(value = "/{id}")
-    public ResponseEntity<Response<User>> update(@PathVariable Long id, @RequestBody UserRequest userRequest) {
-        User user = userService.updateOne(id, userRequest);
-        Response<User> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully update user with id " + id, user);
-
-        Link all = linkTo(methodOn(this.getClass()).index()).withRel("all");
-        response.add(all);
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Response<User>> destroy(@PathVariable Long id) {
         User user = userService.destroyOne(id);

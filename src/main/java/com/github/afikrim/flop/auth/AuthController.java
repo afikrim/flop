@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,6 +49,18 @@ public class AuthController {
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         User user = authService.profile(userDetails.getUsername());
+
+        Response<User> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully get user profile", user);
+
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PutMapping(value = "/profile")
+    public ResponseEntity<Response<User>> updateProfile(@RequestBody UserRequest userRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        User user = authService.updateProfile(userDetails.getUsername(), userRequest);
 
         Response<User> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully get user profile", user);
 

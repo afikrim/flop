@@ -8,8 +8,6 @@ public interface UserService {
 
     User getOne(Long id);
 
-    User updateOne(Long id, UserRequest userRequest);
-
     User destroyOne(Long id);
 
     User getOneByCredential(String username);
