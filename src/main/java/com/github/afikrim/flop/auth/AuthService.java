@@ -1,7 +1,11 @@
 package com.github.afikrim.flop.auth;
 
+import java.util.List;
+
 import com.github.afikrim.flop.users.User;
 import com.github.afikrim.flop.users.UserRequest;
+import com.github.afikrim.flop.userwallets.UserWallet;
+import com.github.afikrim.flop.userwallets.UserWalletRequest;
 
 public interface AuthService {
 
@@ -9,10 +13,12 @@ public interface AuthService {
 
     AuthResponse authenticate(String credential, String password);
 
-    User profile(String credential);
+    List<UserWallet> getUserWallets(String credential);
 
-    User updateProfile(String credential, UserRequest userRequest);
+    UserWallet addNewUserWallet(String credential, UserWalletRequest userWalletRequest);
 
-    void deleteProfile(String credential);
+    UserWallet updateUserWallet(String credential, Long userWalletId, UserWalletRequest userWalletRequest);
+
+    void deleteUserWallet(String credential, Long userWalletId);
 
 }

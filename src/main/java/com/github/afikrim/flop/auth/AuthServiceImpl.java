@@ -1,8 +1,5 @@
 package com.github.afikrim.flop.auth;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 import com.github.afikrim.flop.accounts.Account;
 import com.github.afikrim.flop.accounts.AccountRepository;
 import com.github.afikrim.flop.accounts.AccountRequest;
@@ -11,10 +8,14 @@ import com.github.afikrim.flop.roles.RoleRepository;
 import com.github.afikrim.flop.users.User;
 import com.github.afikrim.flop.users.UserRepository;
 import com.github.afikrim.flop.users.UserRequest;
+import com.github.afikrim.flop.userwallets.UserWallet;
+import com.github.afikrim.flop.userwallets.UserWalletRepository;
+import com.github.afikrim.flop.userwallets.UserWalletRequest;
 import com.github.afikrim.flop.utils.exception.CustomException;
 import com.github.afikrim.flop.utils.jwt.JwtUtil;
+import com.github.afikrim.flop.wallets.Wallet;
+import com.github.afikrim.flop.wallets.WalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,22 +30,21 @@ import java.util.*;
 @Service
 public class AuthServiceImpl implements AuthService {
 
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     JwtUtil jwtUtil;
-
     @Autowired
     AuthenticationManager authenticationManager;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private AccountRepository accountRepository;
-
     @Autowired
     private RoleRepository roleRepository;
-
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    private WalletRepository walletRepository;
+    @Autowired
+    private UserWalletRepository userWalletRepository;
 
     public AuthServiceImpl() {
         bCryptPasswordEncoder = new BCryptPasswordEncoder();
@@ -55,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse register(UserRequest userRequest) {
         Optional<AccountRequest> optionalAccountRequest = userRequest.getAccount();
 
-        if (!optionalAccountRequest.isPresent())
+        if (optionalAccountRequest.isEmpty())
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Missing field account");
 
         AccountRequest accountRequest = optionalAccountRequest.get();
@@ -125,99 +125,96 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public User profile(String credential) {
+    public List<UserWallet> getUserWallets(String credential) {
         Optional<Account> optionalAccount = accountRepository.getAccountWithCredential(credential);
         if (optionalAccount.isEmpty()) {
             throw new EntityNotFoundException("User not found!");
         }
 
         Account account = optionalAccount.get();
+        User user = account.getUser();
+        Set<UserWallet> setUserWallets = user.getUserWallets();
 
-        Link self = linkTo(methodOn(AuthController.class).updateProfile(null)).withRel("update");
-        account.getUser().add(self);
-
-        return account.getUser();
+        return new ArrayList<>(setUserWallets);
     }
 
-    @Transactional
     @Override
-    public User updateProfile(String credential, UserRequest userRequest) {
+    public UserWallet addNewUserWallet(String credential, UserWalletRequest userWalletRequest) {
         Optional<Account> optionalAccount = accountRepository.getAccountWithCredential(credential);
         if (optionalAccount.isEmpty()) {
             throw new EntityNotFoundException("User not found!");
         }
 
-        Account tempAccount = optionalAccount.get();
-        User tempUser = tempAccount.getUser();
-
-        Optional<AccountRequest> optionalAccountRequest = userRequest.getAccount();
-
-        if (userRequest.getFullname() != null && !userRequest.getFullname().equals(tempUser.getFullname()))
-            tempUser.setFullname(userRequest.getFullname());
-
-        if (userRequest.getEmail() != null && !userRequest.getEmail().equals(tempUser.getEmail())) {
-            Optional<Account> optionalAccountWithNewEmail = accountRepository
-                    .getAccountWithCredential(userRequest.getEmail());
-            if (optionalAccountWithNewEmail.isPresent())
-                throw new CustomException("Email already in used.", HttpStatus.BAD_REQUEST);
-
-            tempUser.setEmail(userRequest.getEmail());
+        Optional<Wallet> optionalWallet = walletRepository.findById(userWalletRequest.getWalletId());
+        if (optionalWallet.isEmpty()) {
+            throw new EntityNotFoundException("Wallet with id: " + userWalletRequest.getWalletId() + " not found.");
         }
 
-        if (userRequest.getPhone() != null && !userRequest.getPhone().equals(tempUser.getPhone())) {
-            Optional<Account> optionalAccountWithNewPhone = accountRepository
-                    .getAccountWithCredential(userRequest.getPhone());
-            if (optionalAccountWithNewPhone.isPresent())
-                throw new CustomException("Phone already in used.", HttpStatus.BAD_REQUEST);
+        Account account = optionalAccount.get();
+        Wallet wallet = optionalWallet.get();
+        User user = account.getUser();
 
-            tempUser.setPhone(userRequest.getPhone());
+        UserWallet userWallet = new UserWallet();
+        userWallet.setName(userWalletRequest.getName());
+        userWallet.setPhone(userWalletRequest.getPhone());
+        userWallet.setUser(user);
+        userWallet.setWallet(wallet);
+        userWallet.setCreatedAt(new Date());
+        userWallet.setUpdatedAt(new Date());
+
+        return userWalletRepository.save(userWallet);
+    }
+
+    @Override
+    public UserWallet updateUserWallet(String credential, Long userWalletId, UserWalletRequest userWalletRequest) {
+        Optional<Account> optionalAccount = accountRepository.getAccountWithCredential(credential);
+        if (optionalAccount.isEmpty()) {
+            throw new EntityNotFoundException("User not found!");
         }
 
-        if (optionalAccountRequest.isPresent()) {
-            AccountRequest tempAccountRequest = optionalAccountRequest.get();
+        Optional<UserWallet> optionalUserWallet = userWalletRepository.findById(userWalletId);
+        if (optionalUserWallet.isEmpty()) {
+            throw new EntityNotFoundException(
+                    "Wallet Relation with id: " + userWalletId + " not found.");
+        }
 
-            if (tempAccountRequest.getUsername() != null
-                    && !tempAccountRequest.getUsername().equals(tempAccount.getUsername())) {
-                Optional<Account> optionalAccountWithNewUsername = accountRepository
-                        .getAccountWithCredential(tempAccountRequest.getUsername());
-                if (optionalAccountWithNewUsername.isPresent())
-                    throw new CustomException("Username already in used.", HttpStatus.BAD_REQUEST);
+        UserWallet userWallet = optionalUserWallet.get();
 
-                tempAccount.setUsername(tempAccountRequest.getUsername());
+        if (userWalletRequest.getName() != null && !userWalletRequest.getName().equals(userWallet.getName())) {
+            userWallet.setName(userWalletRequest.getName());
+        }
+        if (userWalletRequest.getPhone() != null && !userWalletRequest.getPhone().equals(userWallet.getPhone())) {
+            userWallet.setPhone(userWalletRequest.getPhone());
+        }
+        if (userWalletRequest.getWalletId() != null
+                && !userWalletRequest.getWalletId().equals(userWallet.getWallet().getId())) {
+            Optional<Wallet> optionalWallet = walletRepository.findById(userWalletRequest.getWalletId());
+            if (optionalWallet.isEmpty()) {
+                throw new EntityNotFoundException("Wallet with id: " + userWalletRequest.getWalletId() + " not found.");
             }
 
-            if (tempAccountRequest.getPassword() != null)
-                tempAccount.setPassword(//
-                        bCryptPasswordEncoder.encode(tempAccountRequest.getPassword())//
-                );
-
-            tempAccount.setUpdatedAt(new Date());
-            tempUser.setAccount(tempAccount);
+            Wallet wallet = optionalWallet.get();
+            userWallet.setWallet(wallet);
         }
+        userWallet.setUpdatedAt(new Date());
 
-        tempUser.setUpdatedAt(new Date());
-
-        Link self = linkTo(methodOn(AuthController.class).profile()).withRel("self");
-        tempUser.add(self);
-
-        return userRepository.save(tempUser);
+        return userWalletRepository.save(userWallet);
     }
 
     @Override
-    public void deleteProfile(String credential) {
+    public void deleteUserWallet(String credential, Long userWalletId) {
         Optional<Account> optionalAccount = accountRepository.getAccountWithCredential(credential);
         if (optionalAccount.isEmpty()) {
             throw new EntityNotFoundException("User not found!");
         }
 
-        Account tempAccount = optionalAccount.get();
-        User tempUser = tempAccount.getUser();
+        Optional<UserWallet> optionalUserWallet = userWalletRepository.findById(userWalletId);
+        if (optionalUserWallet.isEmpty()) {
+            throw new EntityNotFoundException(
+                    "Wallet Relation with id: " + userWalletId + " not found.");
+        }
 
-        tempAccount.setIsDeleted(true);
-        tempUser.setUpdatedAt(new Date());
-
-        accountRepository.save(tempAccount);
-        userRepository.save(tempUser);
+        userWalletRepository.deleteById(userWalletId);
     }
 
     private Map<String, Object> setClaims(User user) {

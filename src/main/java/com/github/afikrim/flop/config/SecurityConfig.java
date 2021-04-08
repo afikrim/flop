@@ -5,6 +5,7 @@ import com.github.afikrim.flop.utils.jwt.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.BeanIds;
@@ -61,9 +62,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf()//
                 .disable()//
                 .authorizeRequests()//
-                .antMatchers("/", "/v1/auth/login", "/v1/auth/register").permitAll()//
-                .antMatchers("/v1/auth/profile", "/v1/wallets").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
-                .antMatchers("/v1/users/**", "/v1/wallets/*").hasAnyAuthority("ROLE_ADMIN")//
+                .antMatchers(HttpMethod.GET, "/").permitAll()//
+                .antMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/register").permitAll()//
+                .antMatchers(HttpMethod.GET, "/v1/users").hasAnyAuthority("ROLE_ADMIN")//
+                .antMatchers(HttpMethod.PUT, "/v1/users/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
+                .antMatchers(HttpMethod.GET, "/v1/users/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
+                .antMatchers(HttpMethod.DELETE, "/v1/users/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
+                .antMatchers(HttpMethod.GET, "/v1/wallets/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
+                .antMatchers(HttpMethod.POST, "/v1/wallets/*").hasAnyAuthority("ROLE_ADMIN")//
+                .antMatchers(HttpMethod.PUT, "/v1/wallets/*").hasAnyAuthority("ROLE_ADMIN")//
+                .antMatchers(HttpMethod.DELETE, "/v1/wallets/*").hasAnyAuthority("ROLE_ADMIN")//
                 .anyRequest()//
                 .authenticated()//
                 .and()//
