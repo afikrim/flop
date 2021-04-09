@@ -1,11 +1,15 @@
 package com.github.afikrim.flop.wallets;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.util.List;
 
 import com.github.afikrim.flop.utils.response.Response;
 import com.github.afikrim.flop.utils.response.ResponseCode;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +35,10 @@ public class WalletController {
         Response<List<Wallet>> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully get all wallets",
                 wallets);
 
+        Link store = linkTo(methodOn(this.getClass()).store(null)).withRel("store");
+
+        response.add(store);
+
         return ResponseEntity.ok().body(response);
     }
 
@@ -39,6 +47,10 @@ public class WalletController {
         Wallet wallet = walletService.store(walletRequest);
         Response<Wallet> response = new Response<>(true, ResponseCode.CREATED, "Successfully created a new wallet",
                 wallet);
+
+        Link index = linkTo(methodOn(this.getClass()).index()).withRel("all");
+
+        response.add(index);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -49,15 +61,26 @@ public class WalletController {
         Response<Wallet> response = new Response<>(true, ResponseCode.HTTP_OK,
                 "Successfully update wallet with code: " + code, wallet);
 
+        Link index = linkTo(methodOn(this.getClass()).index()).withRel("all");
+        Link store = linkTo(methodOn(this.getClass()).store(null)).withRel("store");
+
+        response.add(index);
+        response.add(store);
+
         return ResponseEntity.ok().body(response);
     }
 
     @DeleteMapping(value = "/{code}")
     public ResponseEntity<Response<Wallet>> destroy(@PathVariable String code) {
         walletService.deleteOne(code);
-        ;
         Response<Wallet> response = new Response<>(true, ResponseCode.HTTP_OK,
                 "Successfully delete wallet with code: " + code, null);
+
+        Link index = linkTo(methodOn(this.getClass()).index()).withRel("all");
+        Link store = linkTo(methodOn(this.getClass()).store(null)).withRel("store");
+
+        response.add(index);
+        response.add(store);
 
         return ResponseEntity.ok().body(response);
     }

@@ -1,5 +1,8 @@
 package com.github.afikrim.flop.wallets;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -7,6 +10,7 @@ import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +21,17 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public List<Wallet> getAll() {
-        return walletRepository.findAll();
+        List<Wallet> wallets = walletRepository.findAll();
+
+        for (Wallet wallet: wallets) {
+            Link update = linkTo(methodOn(WalletController.class).update(wallet.getCode(), null)).withRel("update");
+            Link delete = linkTo(methodOn(WalletController.class).destroy(wallet.getCode())).withRel("delete");
+
+            wallet.add(update);
+            wallet.add(delete);
+        }
+
+        return wallets;
     }
 
     @Override
@@ -32,17 +46,13 @@ public class WalletServiceImpl implements WalletService {
         wallet.setName(walletRequest.getName());
         wallet.setEnabled(false);
 
+        Link update = linkTo(methodOn(WalletController.class).update(wallet.getCode(), null)).withRel("update");
+        Link delete = linkTo(methodOn(WalletController.class).destroy(wallet.getCode())).withRel("delete");
+
+        wallet.add(update);
+        wallet.add(delete);
+
         return walletRepository.save(wallet);
-    }
-
-    @Override
-    public Wallet getOne(String code) {
-        Optional<Wallet> optionalWallet = walletRepository.findByCode(code);
-        if (optionalWallet.isEmpty()) {
-            throw new EntityNotFoundException("Wallet with this code not found");
-        }
-
-        return optionalWallet.get();
     }
 
     @Override
@@ -52,23 +62,27 @@ public class WalletServiceImpl implements WalletService {
             throw new EntityNotFoundException("Wallet with this code not found");
         }
 
-        Wallet tempWallet = optionalWallet.get();
-        if (walletRequest.getCode() != null && !walletRequest.getCode().equals(tempWallet.getCode())) {
+        Wallet wallet = optionalWallet.get();
+        if (walletRequest.getCode() != null && !walletRequest.getCode().equals(wallet.getCode())) {
             Optional<Wallet> walletCodeExists = walletRepository.findByCode(walletRequest.getCode());
             if (walletCodeExists.isPresent()) {
                 throw new EntityExistsException("Wallet with this code already exists");
             }
 
-            tempWallet.setCode(walletRequest.getCode());
+            wallet.setCode(walletRequest.getCode());
         }
-        if (walletRequest.getName() != null && !walletRequest.getName().equals(tempWallet.getName())) {
-            tempWallet.setName(walletRequest.getName());
+        if (walletRequest.getName() != null && !walletRequest.getName().equals(wallet.getName())) {
+            wallet.setName(walletRequest.getName());
         }
-        if (walletRequest.getEnabled() != null && !walletRequest.getEnabled().equals(tempWallet.getEnabled())) {
-            tempWallet.setEnabled(walletRequest.getEnabled());
+        if (walletRequest.getEnabled() != null && !walletRequest.getEnabled().equals(wallet.getEnabled())) {
+            wallet.setEnabled(walletRequest.getEnabled());
         }
 
-        return walletRepository.save(tempWallet);
+        Link delete = linkTo(methodOn(WalletController.class).destroy(wallet.getCode())).withRel("delete");
+
+        wallet.add(delete);
+
+        return walletRepository.save(wallet);
     }
 
     @Override

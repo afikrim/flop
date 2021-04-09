@@ -8,8 +8,6 @@ public interface WalletService {
 
     public Wallet store(WalletRequest walletRequest);
 
-    public Wallet getOne(String code);
-
     public Wallet updateOne(String code, WalletRequest walletRequest);
 
     public void deleteOne(String code);
