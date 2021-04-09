@@ -65,9 +65,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/").permitAll()//
                 .antMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/register").permitAll()//
                 .antMatchers(HttpMethod.GET, "/v1/users").hasAnyAuthority("ROLE_ADMIN")//
-                .antMatchers(HttpMethod.PUT, "/v1/users/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
-                .antMatchers(HttpMethod.GET, "/v1/users/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
-                .antMatchers(HttpMethod.DELETE, "/v1/users/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
+                .antMatchers(HttpMethod.PUT, "/v1/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
+                .antMatchers(HttpMethod.GET, "/v1/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
+                .antMatchers(HttpMethod.DELETE, "/v1/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
                 .antMatchers(HttpMethod.GET, "/v1/wallets/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
                 .antMatchers(HttpMethod.POST, "/v1/wallets/*").hasAnyAuthority("ROLE_ADMIN")//
                 .antMatchers(HttpMethod.PUT, "/v1/wallets/*").hasAnyAuthority("ROLE_ADMIN")//
