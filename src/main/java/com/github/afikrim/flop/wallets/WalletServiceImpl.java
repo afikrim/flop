@@ -64,7 +64,7 @@ public class WalletServiceImpl implements WalletService {
         if (walletRequest.getName() != null && !walletRequest.getName().equals(tempWallet.getName())) {
             tempWallet.setName(walletRequest.getName());
         }
-        if (walletRequest.getEnabled() != null && walletRequest.getEnabled() != tempWallet.getEnabled()) {
+        if (walletRequest.getEnabled() != null && !walletRequest.getEnabled().equals(tempWallet.getEnabled())) {
             tempWallet.setEnabled(walletRequest.getEnabled());
         }
 

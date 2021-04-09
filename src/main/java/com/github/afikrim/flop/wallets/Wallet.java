@@ -1,13 +1,20 @@
 package com.github.afikrim.flop.wallets;
 
 import java.io.Serializable;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.github.afikrim.flop.userwallets.UserWallet;
 
 import org.springframework.hateoas.RepresentationModel;
 
@@ -30,6 +37,9 @@ public class Wallet extends RepresentationModel<Wallet> implements Serializable 
 
     @Column(name = "enabled", columnDefinition = "boolean default false", nullable = false)
     private Boolean enabled = false;
+
+    @OneToMany(mappedBy = "wallet", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Set<UserWallet> users;
 
     public Integer getId() {
         return id;
@@ -61,6 +71,15 @@ public class Wallet extends RepresentationModel<Wallet> implements Serializable 
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    @JsonIgnore
+    public Set<UserWallet> getUsers() {
+        return users;
+    }
+
+    public void setUsers(Set<UserWallet> users) {
+        this.users = users;
     }
 
 }

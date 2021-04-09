@@ -1,13 +1,18 @@
 package com.github.afikrim.flop.users;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import com.github.afikrim.flop.accounts.Account;
 import com.github.afikrim.flop.accounts.AccountRepository;
 import com.github.afikrim.flop.accounts.AccountRequest;
+import com.github.afikrim.flop.userwallets.UserWalletController;
 import com.github.afikrim.flop.utils.exception.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,10 +23,6 @@ import javax.persistence.EntityNotFoundException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -36,13 +37,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getAll() {
-        return userRepository.findAll().stream().peek(user -> {
+        List<User> users = userRepository.findAll();
+
+        for (User user : users) {
             Link self = linkTo(methodOn(UserController.class).get(user.getId())).withRel("self");
             Link delete = linkTo(methodOn(UserController.class).destroy(user.getId())).withRel("delete");
+            Link wallets = linkTo(methodOn(UserWalletController.class).index(user.getId())).withRel("wallets");
 
             user.add(self);
             user.add(delete);
-        }).collect(Collectors.toList());
+            user.add(wallets);
+        }
+
+        return users;
     }
 
     @Override
@@ -62,9 +69,11 @@ public class UserServiceImpl implements UserService {
 
         Link update = linkTo(methodOn(UserController.class).update(id, null)).withRel("update");
         Link delete = linkTo(methodOn(UserController.class).destroy(id)).withRel("delete");
+        Link wallets = linkTo(methodOn(UserWalletController.class).index(id)).withRel("wallets");
 
         tempUser.add(update);
         tempUser.add(delete);
+        tempUser.add(wallets);
 
         return tempUser;
     }
@@ -88,8 +97,9 @@ public class UserServiceImpl implements UserService {
 
         Optional<AccountRequest> optionalAccountRequest = userRequest.getAccount();
 
-        if (userRequest.getFullname() != null && !userRequest.getFullname().equals(tempUser.getFullname()))
+        if (userRequest.getFullname() != null && !userRequest.getFullname().equals(tempUser.getFullname())) {
             tempUser.setFullname(userRequest.getFullname());
+        }
 
         if (userRequest.getEmail() != null && !userRequest.getEmail().equals(tempUser.getEmail())) {
             Optional<Account> optionalAccountWithNewEmail = accountRepository
@@ -122,10 +132,11 @@ public class UserServiceImpl implements UserService {
                 tempAccount.setUsername(tempAccountRequest.getUsername());
             }
 
-            if (tempAccountRequest.getPassword() != null)
+            if (tempAccountRequest.getPassword() != null) {
                 tempAccount.setPassword(//
                         bCryptPasswordEncoder.encode(tempAccountRequest.getPassword())//
                 );
+            }
 
             tempAccount.setUpdatedAt(new Date());
             tempUser.setAccount(tempAccount);
@@ -133,9 +144,11 @@ public class UserServiceImpl implements UserService {
 
         Link update = linkTo(methodOn(UserController.class).update(id, null)).withRel("update");
         Link delete = linkTo(methodOn(UserController.class).destroy(id)).withRel("delete");
+        Link wallets = linkTo(methodOn(UserWalletController.class).index(id)).withRel("wallets");
 
         tempUser.add(update);
         tempUser.add(delete);
+        tempUser.add(wallets);
 
         return userRepository.save(tempUser);
     }
@@ -152,7 +165,8 @@ public class UserServiceImpl implements UserService {
         }
 
         User tempUser = optionalUser.get();
-        if (!userDetails.getUsername().equals(tempUser.getEmail())) {
+        if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                && !userDetails.getUsername().equals(tempUser.getEmail())) {
             throw new CustomException("You are not authorized to access this resource", HttpStatus.UNAUTHORIZED);
         }
 
