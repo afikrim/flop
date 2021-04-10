@@ -1,5 +1,8 @@
 package com.github.afikrim.flop.systemwallets;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +14,7 @@ import com.github.afikrim.flop.wallets.Wallet;
 import com.github.afikrim.flop.wallets.WalletRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,6 +29,16 @@ public class SystemWalletServiceImpl implements SystemWalletService {
     @Override
     public List<SystemWallet> getAll() {
         List<SystemWallet> systemWallets = systemWalletRepository.findAll();
+
+        for (SystemWallet systemWallet: systemWallets) {
+            Link self = linkTo(methodOn(SystemWalletController.class).get(systemWallet.getId())).withRel("self");
+            Link update = linkTo(methodOn(SystemWalletController.class).update(systemWallet.getId(), null)).withRel("update");
+            Link delete = linkTo(methodOn(SystemWalletController.class).destroy(systemWallet.getId())).withRel("delete");
+
+            systemWallet.add(self);
+            systemWallet.add(update);
+            systemWallet.add(delete);
+        }
 
         return systemWallets;
     }
@@ -50,11 +64,19 @@ public class SystemWalletServiceImpl implements SystemWalletService {
         systemWallet.setCreatedAt(new Date());
         systemWallet.setUpdatedAt(new Date());
 
+        Link self = linkTo(methodOn(SystemWalletController.class).get(systemWallet.getId())).withRel("self");
+        Link update = linkTo(methodOn(SystemWalletController.class).update(systemWallet.getId(), null)).withRel("update");
+        Link delete = linkTo(methodOn(SystemWalletController.class).destroy(systemWallet.getId())).withRel("delete");
+
+        systemWallet.add(self);
+        systemWallet.add(update);
+        systemWallet.add(delete);
+
         return systemWalletRepository.save(systemWallet);
     }
 
     @Override
-    public SystemWallet getOne(Long id) {
+    public SystemWallet getOne(Integer id) {
         Optional<SystemWallet> optionalSystemWallet = systemWalletRepository.findById(id);
         if (optionalSystemWallet.isEmpty()) {
             throw new EntityNotFoundException("Wallet with id " + id + " not found.");
@@ -62,11 +84,17 @@ public class SystemWalletServiceImpl implements SystemWalletService {
 
         SystemWallet systemWallet = optionalSystemWallet.get();
 
+        Link update = linkTo(methodOn(SystemWalletController.class).update(systemWallet.getId(), null)).withRel("update");
+        Link delete = linkTo(methodOn(SystemWalletController.class).destroy(systemWallet.getId())).withRel("delete");
+
+        systemWallet.add(update);
+        systemWallet.add(delete);
+
         return systemWallet;
     }
 
     @Override
-    public SystemWallet updateOne(Long id, SystemWalletRequest systemWalletRequest) {
+    public SystemWallet updateOne(Integer id, SystemWalletRequest systemWalletRequest) {
         Optional<SystemWallet> optionalSystemWallet = systemWalletRepository.findById(id);
         if (optionalSystemWallet.isEmpty()) {
             throw new EntityNotFoundException("Wallet with id " + id + " not found.");
@@ -93,11 +121,17 @@ public class SystemWalletServiceImpl implements SystemWalletService {
 
         systemWallet.setUpdatedAt(new Date());
 
+        Link self = linkTo(methodOn(SystemWalletController.class).get(systemWallet.getId())).withRel("self");
+        Link delete = linkTo(methodOn(SystemWalletController.class).destroy(systemWallet.getId())).withRel("delete");
+
+        systemWallet.add(self);
+        systemWallet.add(delete);
+
         return systemWalletRepository.save(systemWallet);
     }
 
     @Override
-    public void deleteOne(Long id) {
+    public void deleteOne(Integer id) {
         Optional<SystemWallet> optionalSystemWallet = systemWalletRepository.findById(id);
         if (optionalSystemWallet.isEmpty()) {
             throw new EntityNotFoundException("Wallet with id " + id + " not found.");

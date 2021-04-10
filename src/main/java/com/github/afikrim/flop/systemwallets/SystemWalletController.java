@@ -54,7 +54,7 @@ public class SystemWalletController {
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Response<SystemWallet>> get(@PathVariable Long id) {
+    public ResponseEntity<Response<SystemWallet>> get(@PathVariable Integer id) {
         SystemWallet systemWallet = systemWalletService.getOne(id);
         Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully get a wallet", systemWallet);
 
@@ -68,7 +68,7 @@ public class SystemWalletController {
     }
 
     @PutMapping(value = "/{id}")
-    public ResponseEntity<Response<SystemWallet>> update(@PathVariable Long id, @RequestBody SystemWalletRequest systemWalletRequest) {
+    public ResponseEntity<Response<SystemWallet>> update(@PathVariable Integer id, @RequestBody SystemWalletRequest systemWalletRequest) {
         SystemWallet systemWallet = systemWalletService.updateOne(id, systemWalletRequest);
         Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully update a wallet", systemWallet);
 
@@ -82,7 +82,7 @@ public class SystemWalletController {
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Response<SystemWallet>> destroy(@PathVariable Long id) {
+    public ResponseEntity<Response<SystemWallet>> destroy(@PathVariable Integer id) {
         systemWalletService.deleteOne(id);
         Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully delete a wallet", null);
 

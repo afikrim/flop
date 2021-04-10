@@ -8,10 +8,10 @@ public interface SystemWalletService {
 
     public SystemWallet store(SystemWalletRequest systemWalletRequest);
 
-    public SystemWallet getOne(Long id);
+    public SystemWallet getOne(Integer id);
 
-    public SystemWallet updateOne(Long id, SystemWalletRequest systemWalletRequest);
+    public SystemWallet updateOne(Integer id, SystemWalletRequest systemWalletRequest);
 
-    public void deleteOne(Long id);
+    public void deleteOne(Integer id);
 
 }
