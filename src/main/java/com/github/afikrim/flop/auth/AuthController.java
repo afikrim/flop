@@ -1,9 +1,13 @@
 package com.github.afikrim.flop.auth;
 
+import java.util.List;
+
 import com.github.afikrim.flop.users.User;
 import com.github.afikrim.flop.users.UserRequest;
 import com.github.afikrim.flop.utils.response.Response;
 import com.github.afikrim.flop.utils.response.ResponseCode;
+import com.github.afikrim.flop.wallets.Wallet;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,42 +44,6 @@ public class AuthController {
         AuthResponse authResponse = authService.authenticate(authRequest.getCredential(), authRequest.getPassword());
         Response<AuthResponse> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully logged in",
                 authResponse);
-
-        return ResponseEntity.ok().body(response);
-    }
-
-    @GetMapping(value = "/profile")
-    public ResponseEntity<Response<User>> profile() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User user = authService.profile(userDetails.getUsername());
-
-        Response<User> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully get user profile", user);
-
-        return ResponseEntity.ok().body(response);
-    }
-
-    @PutMapping(value = "/profile")
-    public ResponseEntity<Response<User>> updateProfile(@RequestBody UserRequest userRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User user = authService.updateProfile(userDetails.getUsername(), userRequest);
-
-        Response<User> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully get user profile", user);
-
-        return ResponseEntity.ok().body(response);
-    }
-
-    @DeleteMapping(value = "/profile")
-    public ResponseEntity<Response<User>> deleteProfile() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        authService.deleteProfile(userDetails.getUsername());
-
-        Response<User> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully delete user profile", null);
 
         return ResponseEntity.ok().body(response);
     }

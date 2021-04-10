@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.afikrim.flop.accounts.Account;
 import com.github.afikrim.flop.roles.Role;
+import com.github.afikrim.flop.userwallets.UserWallet;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -60,6 +61,9 @@ public class User extends RepresentationModel<User> implements Serializable {
             }//
     )
     private Set<Role> roles;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Set<UserWallet> wallets;
 
     @CreatedDate
     @Column(name = "created_at")
@@ -130,6 +134,15 @@ public class User extends RepresentationModel<User> implements Serializable {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @JsonIgnore
+    public Set<UserWallet> getWallets() {
+        return wallets;
+    }
+
+    public void setWallets(Set<UserWallet> userWallets) {
+        this.wallets = userWallets;
     }
 
 }

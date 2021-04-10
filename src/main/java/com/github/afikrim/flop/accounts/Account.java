@@ -1,6 +1,7 @@
 package com.github.afikrim.flop.accounts;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.afikrim.flop.users.User;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -8,13 +9,17 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
+
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity
 @Table(name = "accounts")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Account {
+public class Account implements Serializable {
+
+    private static final long serialVersionUID = -7487094891150072714L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -66,6 +71,7 @@ public class Account {
         this.isDeleted = isDeleted;
     }
 
+    @JsonProperty("is_deleted")
     public Boolean getIsDeleted() {
         return isDeleted;
     }
