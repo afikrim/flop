@@ -12,6 +12,8 @@ public interface SystemWalletService {
 
     public SystemWallet updateOne(Integer id, SystemWalletRequest systemWalletRequest);
 
+    public SystemWallet deposit(Integer id, SystemWalletTopupRequest systemWalletTopupRequest);
+
     public void deleteOne(Integer id);
 
 }

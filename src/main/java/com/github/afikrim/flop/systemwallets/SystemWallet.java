@@ -48,6 +48,9 @@ public class SystemWallet extends RepresentationModel<SystemWallet> implements S
     @Column(name = "balance")
     private Long balance;
 
+    @Column(name = "is_available")
+    private Boolean isAvailable;
+
     @CreatedDate
     @Column(name = "created_at")
     private Date createdAt;
@@ -110,6 +113,18 @@ public class SystemWallet extends RepresentationModel<SystemWallet> implements S
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Boolean getIsAvailable() {
+        return isAvailable;
+    }
+
+    public void setIsAvailable(Boolean isAvailable) {
+        this.isAvailable = isAvailable;
+    }
+
+    public void topup(Long amount) {
+        balance += amount;
     }
 
 }

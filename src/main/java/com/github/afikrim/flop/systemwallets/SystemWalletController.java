@@ -95,4 +95,18 @@ public class SystemWalletController {
         return ResponseEntity.ok().body(response);
     }
 
+    @PostMapping(value = "/{id}/deposit")
+    public ResponseEntity<Response<SystemWallet>> deposit(@PathVariable Integer id, @RequestBody SystemWalletTopupRequest systemWalletTopupRequest) {
+        SystemWallet systemWallet = systemWalletService.deposit(id, systemWalletTopupRequest);
+        Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully topup wallet balance", systemWallet);
+
+        Link store = linkTo(methodOn(this.getClass()).store(null)).withRel("store");
+        Link index = linkTo(methodOn(this.getClass()).index()).withRel("all");
+
+        response.add(store);
+        response.add(index);
+
+        return ResponseEntity.ok().body(response);
+    }
+
 }
