@@ -56,7 +56,8 @@ public class WalletController {
     }
 
     @PutMapping(value = "/{code}")
-    public ResponseEntity<Response<Wallet>> update(@PathVariable String code, @RequestBody WalletRequest walletRequest) {
+    public ResponseEntity<Response<Wallet>> update(@PathVariable String code,
+            @RequestBody WalletRequest walletRequest) {
         Wallet wallet = walletService.updateOne(code, walletRequest);
         Response<Wallet> response = new Response<>(true, ResponseCode.HTTP_OK,
                 "Successfully update wallet with code: " + code, wallet);
@@ -75,6 +76,36 @@ public class WalletController {
         walletService.deleteOne(code);
         Response<Wallet> response = new Response<>(true, ResponseCode.HTTP_OK,
                 "Successfully delete wallet with code: " + code, null);
+
+        Link index = linkTo(methodOn(this.getClass()).index()).withRel("all");
+        Link store = linkTo(methodOn(this.getClass()).store(null)).withRel("store");
+
+        response.add(index);
+        response.add(store);
+
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping(value = "/{code}/enable")
+    public ResponseEntity<Response<Wallet>> enable(@PathVariable String code) {
+        Wallet wallet = walletService.updateStatus(code, true);
+        Response<Wallet> response = new Response<>(true, ResponseCode.HTTP_OK,
+                "Successfully enable wallet with code: " + code, wallet);
+
+        Link index = linkTo(methodOn(this.getClass()).index()).withRel("all");
+        Link store = linkTo(methodOn(this.getClass()).store(null)).withRel("store");
+
+        response.add(index);
+        response.add(store);
+
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping(value = "/{code}/disable")
+    public ResponseEntity<Response<Wallet>> disable(@PathVariable String code) {
+        Wallet wallet = walletService.updateStatus(code, false);
+        Response<Wallet> response = new Response<>(true, ResponseCode.HTTP_OK,
+                "Successfully disable wallet with code: " + code, wallet);
 
         Link index = linkTo(methodOn(this.getClass()).index()).withRel("all");
         Link store = linkTo(methodOn(this.getClass()).store(null)).withRel("store");

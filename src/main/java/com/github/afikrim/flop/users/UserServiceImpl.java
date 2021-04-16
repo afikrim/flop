@@ -37,6 +37,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getAll() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            throw new CustomException("You're not authorized to access this resource.", HttpStatus.UNAUTHORIZED);
+        }
+
         List<User> users = userRepository.findAll();
 
         for (User user : users) {
@@ -102,18 +109,16 @@ public class UserServiceImpl implements UserService {
         }
 
         if (userRequest.getEmail() != null && !userRequest.getEmail().equals(tempUser.getEmail())) {
-            Optional<Account> optionalAccountWithNewEmail = accountRepository
-                    .getAccountWithCredential(userRequest.getEmail());
-            if (optionalAccountWithNewEmail.isPresent())
+            Optional<User> optionalUserWithEmail = userRepository.findByEmail(userRequest.getEmail());
+            if (optionalUserWithEmail.isPresent())
                 throw new CustomException("Email already in used.", HttpStatus.BAD_REQUEST);
 
             tempUser.setEmail(userRequest.getEmail());
         }
 
         if (userRequest.getPhone() != null && !userRequest.getPhone().equals(tempUser.getPhone())) {
-            Optional<Account> optionalAccountWithNewPhone = accountRepository
-                    .getAccountWithCredential(userRequest.getPhone());
-            if (optionalAccountWithNewPhone.isPresent())
+            Optional<User> optionalUserWithPhone = userRepository.findByPhone(userRequest.getPhone());
+            if (optionalUserWithPhone.isPresent())
                 throw new CustomException("Phone already in used.", HttpStatus.BAD_REQUEST);
 
             tempUser.setPhone(userRequest.getPhone());
@@ -124,9 +129,9 @@ public class UserServiceImpl implements UserService {
 
             if (tempAccountRequest.getUsername() != null
                     && !tempAccountRequest.getUsername().equals(tempAccount.getUsername())) {
-                Optional<Account> optionalAccountWithNewUsername = accountRepository
-                        .getAccountWithCredential(tempAccountRequest.getUsername());
-                if (optionalAccountWithNewUsername.isPresent())
+                Optional<Account> optionalAccountWithUsername = accountRepository
+                        .findByUsername(tempAccountRequest.getUsername());
+                if (optionalAccountWithUsername.isPresent())
                     throw new CustomException("Username already in used.", HttpStatus.BAD_REQUEST);
 
                 tempAccount.setUsername(tempAccountRequest.getUsername());

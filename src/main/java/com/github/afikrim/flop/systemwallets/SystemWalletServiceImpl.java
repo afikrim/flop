@@ -148,7 +148,11 @@ public class SystemWalletServiceImpl implements SystemWalletService {
         }
 
         SystemWallet systemWallet = optionalSystemWallet.get();
-        systemWallet.topup(systemWalletTopupRequest.getAmount());
+        systemWallet.increaseBalance(systemWalletTopupRequest.getAmount());
+
+        if (systemWallet.getBalance() > 50000) {
+            systemWallet.setIsAvailable(true);
+        }
 
         Link self = linkTo(methodOn(SystemWalletController.class).get(systemWallet.getId())).withRel("self");
         Link update = linkTo(methodOn(SystemWalletController.class).update(systemWallet.getId(), null)).withRel("update");
