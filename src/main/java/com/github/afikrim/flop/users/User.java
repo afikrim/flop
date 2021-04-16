@@ -4,10 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.afikrim.flop.accounts.Account;
 import com.github.afikrim.flop.roles.Role;
+import com.github.afikrim.flop.transactions.Transaction;
 import com.github.afikrim.flop.userwallets.UserWallet;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.hateoas.RepresentationModel;
@@ -15,7 +19,7 @@ import org.springframework.hateoas.RepresentationModel;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -43,7 +47,8 @@ public class User extends RepresentationModel<User> implements Serializable {
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles", //
             joinColumns = { //
                     @JoinColumn(name = "user_id", //
@@ -60,10 +65,15 @@ public class User extends RepresentationModel<User> implements Serializable {
                     )//
             }//
     )
-    private Set<Role> roles;
+    private List<Role> roles;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Set<UserWallet> wallets;
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserWallet> wallets;
+
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Transaction> transactions;
 
     @CreatedDate
     @Column(name = "created_at")
@@ -110,11 +120,11 @@ public class User extends RepresentationModel<User> implements Serializable {
     }
 
     @JsonIgnore
-    public Set<Role> getRoles() {
+    public List<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
 
@@ -137,12 +147,21 @@ public class User extends RepresentationModel<User> implements Serializable {
     }
 
     @JsonIgnore
-    public Set<UserWallet> getWallets() {
+    public List<UserWallet> getWallets() {
         return wallets;
     }
 
-    public void setWallets(Set<UserWallet> userWallets) {
+    public void setWallets(List<UserWallet> userWallets) {
         this.wallets = userWallets;
+    }
+
+    @JsonIgnore
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(List<Transaction> transactions) {
+        this.transactions = transactions;
     }
 
 }

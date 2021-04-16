@@ -84,7 +84,7 @@ public class AuthServiceImpl implements AuthService {
         user.setFullname(userRequest.getFullname());
         user.setEmail(userRequest.getEmail());
         user.setPhone(userRequest.getPhone());
-        user.setRoles(new HashSet<>(Arrays.asList(optionalRole.get())));
+        user.setRoles(new ArrayList<>(Arrays.asList(optionalRole.get())));
         user.setAccount(account);
         user.setCreatedAt(new Date());
         user.setUpdatedAt(new Date());
@@ -100,18 +100,18 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse authenticate(String credential, String password) {
-        Account account = null;
-        Optional<Account> optionalAccount = accountRepository.getAccountWithCredential(credential);
+        User user = null;
+        Optional<User> optionalUser = userRepository.findByCredential(credential);
 
-        if (optionalAccount.isEmpty()) {
+        if (optionalUser.isEmpty()) {
             throw new EntityNotFoundException("User not found!");
         }
 
-        account = optionalAccount.get();
+        user = optionalUser.get();
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(credential, password));
 
-        Map<String, Object> claims = setClaims(account.getUser());
-        String token = jwtUtil.generateToken(claims, account.getUser().getEmail());
+        Map<String, Object> claims = setClaims(user);
+        String token = jwtUtil.generateToken(claims, user.getEmail());
 
         return new AuthResponse(token);
     }

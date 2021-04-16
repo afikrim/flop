@@ -1,12 +1,10 @@
 package com.github.afikrim.flop.roles;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -15,6 +13,8 @@ import javax.persistence.Table;
 
 import com.github.afikrim.flop.users.User;
 
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.hateoas.RepresentationModel;
 
 @Entity
@@ -34,8 +34,9 @@ public class Role extends RepresentationModel<Role> implements Serializable {
     @Column(name = "name")
     private String name;
 
-    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
-    private Set<User> users = new HashSet<>();
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @ManyToMany(mappedBy = "roles")
+    private List<User> users;
 
     public Long getId() {
         return id;
@@ -61,11 +62,11 @@ public class Role extends RepresentationModel<Role> implements Serializable {
         this.name = name;
     }
 
-    public Set<User> getUsers() {
+    public List<User> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<User> users) {
+    public void setUsers(List<User> users) {
         this.users = users;
     }
 

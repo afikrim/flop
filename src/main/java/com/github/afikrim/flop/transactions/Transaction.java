@@ -1,46 +1,41 @@
-package com.github.afikrim.flop.userwallets;
+package com.github.afikrim.flop.transactions;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.afikrim.flop.transactions.Transaction;
+import com.github.afikrim.flop.systemwallets.SystemWallet;
 import com.github.afikrim.flop.users.User;
+import com.github.afikrim.flop.userwallets.UserWallet;
 import com.github.afikrim.flop.wallets.Wallet;
 
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.hateoas.RepresentationModel;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "user_wallets")
+@Table(name = "transactions")
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserWallet extends RepresentationModel<UserWallet> implements Serializable {
+public class Transaction implements Serializable {
 
-    private static final long serialVersionUID = -4335102922056261318L;
+    private static final long serialVersionUID = 5175717418015260148L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -48,18 +43,19 @@ public class UserWallet extends RepresentationModel<UserWallet> implements Seria
     private User user;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "wallet_id")
-    private Wallet wallet;
+    @JoinColumn(name = "source")
+    private SystemWallet source;
 
-    @LazyCollection(LazyCollectionOption.FALSE)
-    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
-    private Set<Transaction> transactions;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "destination")
+    private UserWallet destination;
 
-    @Column(name = "phone")
-    private String phone;
+    @Column(name = "amount")
+    private Long amount;
 
-    @Column(name = "name")
-    private String name;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private TransactionStatus status = TransactionStatus.PENDING;
 
     @CreatedDate
     @Column(name = "created_at")
@@ -77,7 +73,6 @@ public class UserWallet extends RepresentationModel<UserWallet> implements Seria
         this.id = id;
     }
 
-    @JsonIgnore
     public User getUser() {
         return user;
     }
@@ -86,28 +81,36 @@ public class UserWallet extends RepresentationModel<UserWallet> implements Seria
         this.user = user;
     }
 
-    public Wallet getWallet() {
-        return wallet;
+    public Wallet getSource() {
+        return source.getWallet();
     }
 
-    public void setWallet(Wallet wallet) {
-        this.wallet = wallet;
+    public void setSource(SystemWallet source) {
+        this.source = source;
     }
 
-    public String getPhone() {
-        return phone;
+    public UserWallet getDestination() {
+        return destination;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setDestination(UserWallet destination) {
+        this.destination = destination;
     }
 
-    public String getName() {
-        return name;
+    public Long getAmount() {
+        return amount;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setAmount(Long amount) {
+        this.amount = amount;
+    }
+
+    public TransactionStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TransactionStatus status) {
+        this.status = status;
     }
 
     public Date getCreatedAt() {
@@ -124,15 +127,6 @@ public class UserWallet extends RepresentationModel<UserWallet> implements Seria
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    @JsonIgnore
-    public Set<Transaction> getTransactions() {
-        return transactions;
-    }
-
-    public void setTransactions(Set<Transaction> transactions) {
-        this.transactions = transactions;
     }
 
 }
