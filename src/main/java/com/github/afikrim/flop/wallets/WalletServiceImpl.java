@@ -11,6 +11,10 @@ import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,14 +25,23 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public List<Wallet> getAll() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
         List<Wallet> wallets = walletRepository.findAll();
 
-        for (Wallet wallet: wallets) {
-            Link update = linkTo(methodOn(WalletController.class).update(wallet.getCode(), null)).withRel("update");
-            Link delete = linkTo(methodOn(WalletController.class).destroy(wallet.getCode())).withRel("delete");
+        for (Wallet wallet : wallets) {
+            if (userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+                Link update = linkTo(methodOn(WalletController.class).update(wallet.getCode(), null)).withRel("update");
+                Link delete = linkTo(methodOn(WalletController.class).destroy(wallet.getCode())).withRel("delete");
+                Link enable = linkTo(methodOn(WalletController.class).destroy(wallet.getCode())).withRel("enable");
+                Link disable = linkTo(methodOn(WalletController.class).destroy(wallet.getCode())).withRel("disable");
 
-            wallet.add(update);
-            wallet.add(delete);
+                wallet.add(update);
+                wallet.add(delete);
+                wallet.add(enable);
+                wallet.add(disable);
+            }
         }
 
         return wallets;
@@ -42,15 +55,20 @@ public class WalletServiceImpl implements WalletService {
         }
 
         Wallet wallet = new Wallet();
+
         wallet.setCode(walletRequest.getCode());
         wallet.setName(walletRequest.getName());
         wallet.setEnabled(false);
 
         Link update = linkTo(methodOn(WalletController.class).update(wallet.getCode(), null)).withRel("update");
         Link delete = linkTo(methodOn(WalletController.class).destroy(wallet.getCode())).withRel("delete");
+        Link enable = linkTo(methodOn(WalletController.class).enable(wallet.getCode())).withRel("enable");
+        Link disable = linkTo(methodOn(WalletController.class).disable(wallet.getCode())).withRel("disable");
 
         wallet.add(update);
         wallet.add(delete);
+        wallet.add(enable);
+        wallet.add(disable);
 
         return walletRepository.save(wallet);
     }
@@ -79,8 +97,12 @@ public class WalletServiceImpl implements WalletService {
         }
 
         Link delete = linkTo(methodOn(WalletController.class).destroy(wallet.getCode())).withRel("delete");
+        Link enable = linkTo(methodOn(WalletController.class).enable(wallet.getCode())).withRel("enable");
+        Link disable = linkTo(methodOn(WalletController.class).disable(wallet.getCode())).withRel("disable");
 
         wallet.add(delete);
+        wallet.add(enable);
+        wallet.add(disable);
 
         return walletRepository.save(wallet);
     }
@@ -93,6 +115,33 @@ public class WalletServiceImpl implements WalletService {
         }
 
         walletRepository.delete(optionalWallet.get());
+    }
+
+    @Override
+    public Wallet updateStatus(String code, Boolean status) {
+        Optional<Wallet> optionalWallet = walletRepository.findByCode(code);
+        if (optionalWallet.isEmpty()) {
+            throw new EntityNotFoundException("Wallet with this code not found");
+        }
+
+        Wallet wallet = optionalWallet.get();
+        wallet.setEnabled(status);
+
+        Link update = linkTo(methodOn(WalletController.class).update(wallet.getCode(), null)).withRel("update");
+        Link delete = linkTo(methodOn(WalletController.class).destroy(wallet.getCode())).withRel("delete");
+
+        wallet.add(update);
+        wallet.add(delete);
+
+        if (!status.booleanValue()) {
+            Link enable = linkTo(methodOn(WalletController.class).enable(wallet.getCode())).withRel("enable");
+            wallet.add(enable);
+        } else {
+            Link disable = linkTo(methodOn(WalletController.class).disable(wallet.getCode())).withRel("disable");
+            wallet.add(disable);
+        }
+
+        return walletRepository.save(wallet);
     }
 
 }

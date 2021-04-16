@@ -11,6 +11,9 @@ public interface UserWalletRepository extends JpaRepository<UserWallet, Long> {
     @Query("SELECT uw FROM UserWallet uw WHERE uw.phone = ?1 AND uw.user.id = ?2 AND uw.wallet.id = ?3")
     public Optional<UserWallet> findByPhoneAndUserIdAndWalletId(String phone, Long userId, Integer walletId);
 
+    @Query("SELECT uw FROM UserWallet uw WHERE uw.id = ?1 AND uw.user.id = ?2")
+    public Optional<UserWallet> findByIdAndUserId(Long id, Long userId);
+
     @Modifying
     @Query("DELETE FROM UserWallet uw WHERE uw.id = ?1 AND uw.user.id = ?2")
     public void deleteByIdAndUserId(Long id, Long userId);

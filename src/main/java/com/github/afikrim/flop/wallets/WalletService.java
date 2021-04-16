@@ -12,4 +12,6 @@ public interface WalletService {
 
     public void deleteOne(String code);
 
+    public Wallet updateStatus(String code, Boolean status);
+
 }

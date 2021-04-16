@@ -140,4 +140,29 @@ public class SystemWalletServiceImpl implements SystemWalletService {
         systemWalletRepository.deleteById(id);
     }
 
+    @Override
+    public SystemWallet deposit(Integer id, SystemWalletTopupRequest systemWalletTopupRequest) {
+        Optional<SystemWallet> optionalSystemWallet = systemWalletRepository.findById(id);
+        if (optionalSystemWallet.isEmpty()) {
+            throw new EntityNotFoundException("Wallet with id " + id + " not found.");
+        }
+
+        SystemWallet systemWallet = optionalSystemWallet.get();
+        systemWallet.increaseBalance(systemWalletTopupRequest.getAmount());
+
+        if (systemWallet.getBalance() > 50000) {
+            systemWallet.setIsAvailable(true);
+        }
+
+        Link self = linkTo(methodOn(SystemWalletController.class).get(systemWallet.getId())).withRel("self");
+        Link update = linkTo(methodOn(SystemWalletController.class).update(systemWallet.getId(), null)).withRel("update");
+        Link delete = linkTo(methodOn(SystemWalletController.class).destroy(systemWallet.getId())).withRel("delete");
+
+        systemWallet.add(self);
+        systemWallet.add(update);
+        systemWallet.add(delete);
+
+        return systemWalletRepository.save(systemWallet);
+    }
+
 }

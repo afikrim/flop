@@ -3,7 +3,6 @@ package com.github.afikrim.flop.users.details;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import com.github.afikrim.flop.roles.Role;
 import com.github.afikrim.flop.users.User;
@@ -24,7 +23,7 @@ public class UserDetail implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Set<Role> roles = user.getRoles();
+        List<Role> roles = new ArrayList<>(user.getRoles());
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
         for (Role role: roles) {

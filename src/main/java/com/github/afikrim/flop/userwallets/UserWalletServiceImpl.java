@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class UserWalletServiceImpl implements UserWalletService {
@@ -34,7 +33,7 @@ public class UserWalletServiceImpl implements UserWalletService {
 
     @Override
     public List<UserWallet> getAll(User user) {
-        Set<UserWallet> userWallets = user.getWallets();
+        List<UserWallet> userWallets = user.getWallets();
 
         for (UserWallet userWallet: userWallets) {
             Link self = linkTo(methodOn(UserWalletController.class).get(user.getId(), userWallet.getId())).withRel("self");
@@ -88,7 +87,7 @@ public class UserWalletServiceImpl implements UserWalletService {
 
     @Override
     public UserWallet getOne(User user, Long id) {
-        Set<UserWallet> userWallets = user.getWallets();
+        List<UserWallet> userWallets = user.getWallets();
 
         Optional<UserWallet> optionalUserWallet = userWalletRepository.findById(id);
         if (optionalUserWallet.isEmpty()) {
@@ -111,7 +110,7 @@ public class UserWalletServiceImpl implements UserWalletService {
 
     @Override
     public UserWallet updateOne(User user, Long id, UserWalletRequest userWalletRequest) {
-        Set<UserWallet> userWallets = user.getWallets();
+        List<UserWallet> userWallets = user.getWallets();
 
         Optional<UserWallet> optionalUserWallet = userWalletRepository.findById(id);
         if (optionalUserWallet.isEmpty()) {
@@ -156,7 +155,7 @@ public class UserWalletServiceImpl implements UserWalletService {
     @Transactional
     @Override
     public void deleteOne(User user, Long id) {
-        Set<UserWallet> userWallets = user.getWallets();
+        List<UserWallet> userWallets = user.getWallets();
 
         Optional<UserWallet> optionalUserWallet = userWalletRepository.findById(id);
         if (optionalUserWallet.isEmpty()) {

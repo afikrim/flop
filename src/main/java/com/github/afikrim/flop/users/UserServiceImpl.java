@@ -6,6 +6,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import com.github.afikrim.flop.accounts.Account;
 import com.github.afikrim.flop.accounts.AccountRepository;
 import com.github.afikrim.flop.accounts.AccountRequest;
+import com.github.afikrim.flop.transactions.TransactionController;
 import com.github.afikrim.flop.userwallets.UserWalletController;
 import com.github.afikrim.flop.utils.exception.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,16 +38,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getAll() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            throw new CustomException("You're not authorized to access this resource.", HttpStatus.UNAUTHORIZED);
+        }
+
         List<User> users = userRepository.findAll();
 
         for (User user : users) {
             Link self = linkTo(methodOn(UserController.class).get(user.getId())).withRel("self");
             Link delete = linkTo(methodOn(UserController.class).destroy(user.getId())).withRel("delete");
-            Link wallets = linkTo(methodOn(UserWalletController.class).index(user.getId())).withRel("wallets");
 
             user.add(self);
             user.add(delete);
-            user.add(wallets);
         }
 
         return users;
@@ -70,10 +76,12 @@ public class UserServiceImpl implements UserService {
         Link update = linkTo(methodOn(UserController.class).update(id, null)).withRel("update");
         Link delete = linkTo(methodOn(UserController.class).destroy(id)).withRel("delete");
         Link wallets = linkTo(methodOn(UserWalletController.class).index(id)).withRel("wallets");
+        Link transactions = linkTo(methodOn(TransactionController.class).allByUser(id)).withRel("transactions");
 
         tempUser.add(update);
         tempUser.add(delete);
         tempUser.add(wallets);
+        tempUser.add(transactions);
 
         return tempUser;
     }
@@ -102,18 +110,16 @@ public class UserServiceImpl implements UserService {
         }
 
         if (userRequest.getEmail() != null && !userRequest.getEmail().equals(tempUser.getEmail())) {
-            Optional<Account> optionalAccountWithNewEmail = accountRepository
-                    .getAccountWithCredential(userRequest.getEmail());
-            if (optionalAccountWithNewEmail.isPresent())
+            Optional<User> optionalUserWithEmail = userRepository.findByEmail(userRequest.getEmail());
+            if (optionalUserWithEmail.isPresent())
                 throw new CustomException("Email already in used.", HttpStatus.BAD_REQUEST);
 
             tempUser.setEmail(userRequest.getEmail());
         }
 
         if (userRequest.getPhone() != null && !userRequest.getPhone().equals(tempUser.getPhone())) {
-            Optional<Account> optionalAccountWithNewPhone = accountRepository
-                    .getAccountWithCredential(userRequest.getPhone());
-            if (optionalAccountWithNewPhone.isPresent())
+            Optional<User> optionalUserWithPhone = userRepository.findByPhone(userRequest.getPhone());
+            if (optionalUserWithPhone.isPresent())
                 throw new CustomException("Phone already in used.", HttpStatus.BAD_REQUEST);
 
             tempUser.setPhone(userRequest.getPhone());
@@ -124,9 +130,9 @@ public class UserServiceImpl implements UserService {
 
             if (tempAccountRequest.getUsername() != null
                     && !tempAccountRequest.getUsername().equals(tempAccount.getUsername())) {
-                Optional<Account> optionalAccountWithNewUsername = accountRepository
-                        .getAccountWithCredential(tempAccountRequest.getUsername());
-                if (optionalAccountWithNewUsername.isPresent())
+                Optional<Account> optionalAccountWithUsername = accountRepository
+                        .findByUsername(tempAccountRequest.getUsername());
+                if (optionalAccountWithUsername.isPresent())
                     throw new CustomException("Username already in used.", HttpStatus.BAD_REQUEST);
 
                 tempAccount.setUsername(tempAccountRequest.getUsername());
@@ -145,10 +151,12 @@ public class UserServiceImpl implements UserService {
         Link update = linkTo(methodOn(UserController.class).update(id, null)).withRel("update");
         Link delete = linkTo(methodOn(UserController.class).destroy(id)).withRel("delete");
         Link wallets = linkTo(methodOn(UserWalletController.class).index(id)).withRel("wallets");
+        Link transactions = linkTo(methodOn(TransactionController.class).allByUser(id)).withRel("transactions");
 
         tempUser.add(update);
         tempUser.add(delete);
         tempUser.add(wallets);
+        tempUser.add(transactions);
 
         return userRepository.save(tempUser);
     }
