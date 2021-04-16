@@ -6,6 +6,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import com.github.afikrim.flop.accounts.Account;
 import com.github.afikrim.flop.accounts.AccountRepository;
 import com.github.afikrim.flop.accounts.AccountRequest;
+import com.github.afikrim.flop.transactions.TransactionController;
 import com.github.afikrim.flop.userwallets.UserWalletController;
 import com.github.afikrim.flop.utils.exception.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,11 +50,9 @@ public class UserServiceImpl implements UserService {
         for (User user : users) {
             Link self = linkTo(methodOn(UserController.class).get(user.getId())).withRel("self");
             Link delete = linkTo(methodOn(UserController.class).destroy(user.getId())).withRel("delete");
-            Link wallets = linkTo(methodOn(UserWalletController.class).index(user.getId())).withRel("wallets");
 
             user.add(self);
             user.add(delete);
-            user.add(wallets);
         }
 
         return users;
@@ -77,10 +76,12 @@ public class UserServiceImpl implements UserService {
         Link update = linkTo(methodOn(UserController.class).update(id, null)).withRel("update");
         Link delete = linkTo(methodOn(UserController.class).destroy(id)).withRel("delete");
         Link wallets = linkTo(methodOn(UserWalletController.class).index(id)).withRel("wallets");
+        Link transactions = linkTo(methodOn(TransactionController.class).allByUser(id)).withRel("transactions");
 
         tempUser.add(update);
         tempUser.add(delete);
         tempUser.add(wallets);
+        tempUser.add(transactions);
 
         return tempUser;
     }
@@ -150,10 +151,12 @@ public class UserServiceImpl implements UserService {
         Link update = linkTo(methodOn(UserController.class).update(id, null)).withRel("update");
         Link delete = linkTo(methodOn(UserController.class).destroy(id)).withRel("delete");
         Link wallets = linkTo(methodOn(UserWalletController.class).index(id)).withRel("wallets");
+        Link transactions = linkTo(methodOn(TransactionController.class).allByUser(id)).withRel("transactions");
 
         tempUser.add(update);
         tempUser.add(delete);
         tempUser.add(wallets);
+        tempUser.add(transactions);
 
         return userRepository.save(tempUser);
     }

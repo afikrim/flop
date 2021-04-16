@@ -1,5 +1,8 @@
 package com.github.afikrim.flop.transactions;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +18,7 @@ import com.github.afikrim.flop.userwallets.UserWalletRepository;
 import com.github.afikrim.flop.utils.exception.CustomException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,7 +39,19 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public List<Transaction> getAllByUser(User user) {
-        return user.getTransactions();
+        List<Transaction> transactions = user.getTransactions();
+
+        for (Transaction transaction : transactions) {
+            Link self = linkTo(methodOn(TransactionController.class).getOneByUser(user.getId(), transaction.getId()))
+                    .withRel("self");
+            Link cancel = linkTo(methodOn(TransactionController.class).cancel(user.getId(), transaction.getId(), null))
+                    .withRel("cancel");
+
+            transaction.add(self);
+            transaction.add(cancel);
+        }
+
+        return transactions;
     }
 
     @Transactional
@@ -51,15 +67,18 @@ public class TransactionServiceImpl implements TransactionService {
             throw new CustomException("You are not authorized to access this resources", HttpStatus.UNAUTHORIZED);
         }
 
-        Optional<UserWallet> optionalDestination = userWalletRepository.findByIdAndUserId(transactionRequest.getSource(), user.getId());
+        Optional<UserWallet> optionalDestination = userWalletRepository
+                .findByIdAndUserId(transactionRequest.getSource(), user.getId());
         if (optionalDestination.isEmpty()) {
             throw new EntityNotFoundException("Wallet with id " + transactionRequest.getDestination() + " not found.");
         }
 
         UserWallet destination = optionalDestination.get();
-        Optional<SystemWallet> optionalSource = systemWalletRepository.findByWalletId(transactionRequest.getDestination());
+        Optional<SystemWallet> optionalSource = systemWalletRepository
+                .findByWalletId(transactionRequest.getDestination());
         if (optionalSource.isEmpty()) {
-            throw new EntityNotFoundException("System does not provide wallet with id " + transactionRequest.getDestination() + " or this wallet currently not ready.");
+            throw new EntityNotFoundException("System does not provide wallet with id "
+                    + transactionRequest.getDestination() + " or this wallet currently not ready.");
         }
 
         SystemWallet source = optionalSource.get();
@@ -87,6 +106,14 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setCreatedAt(new Date());
         transaction.setUpdatedAt(new Date());
 
+        Link self = linkTo(methodOn(TransactionController.class).getOneByUser(user.getId(), transaction.getId()))
+                .withRel("self");
+        Link cancel = linkTo(methodOn(TransactionController.class).cancel(user.getId(), transaction.getId(), null))
+                .withRel("cancel");
+
+        transaction.add(self);
+        transaction.add(cancel);
+
         return transactionRepository.save(transaction);
     }
 
@@ -104,6 +131,10 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         Transaction transaction = optionalTransaction.get();
+
+        Link cancel = linkTo(methodOn(TransactionController.class).cancel(user.getId(), transaction.getId(), null))
+                .withRel("cancel");
+        transaction.add(cancel);
 
         return transaction;
     }
@@ -138,12 +169,33 @@ public class TransactionServiceImpl implements TransactionService {
 
         transaction.setStatus(transactionStatus);
 
+        Link self = linkTo(methodOn(TransactionController.class).getOneByUser(user.getId(), transaction.getId()))
+                .withRel("self");
+        transaction.add(self);
+
         return transactionRepository.save(transaction);
     }
 
     @Override
     public List<Transaction> getAll() {
-        return transactionRepository.findAll();
+        List<Transaction> transactions = transactionRepository.findAll();
+
+        for (Transaction transaction : transactions) {
+            Link self = linkTo(methodOn(TransactionController.class).getOne(transaction.getId())).withRel("self");
+            Link process = linkTo(methodOn(TransactionController.class).process(transaction.getId(), null))
+                    .withRel("set_on_process");
+            Link failed = linkTo(methodOn(TransactionController.class).process(transaction.getId(), null))
+                    .withRel("set_failed");
+            Link completed = linkTo(methodOn(TransactionController.class).process(transaction.getId(), null))
+                    .withRel("set_completed");
+
+            transaction.add(self);
+            transaction.add(process);
+            transaction.add(failed);
+            transaction.add(completed);
+        }
+
+        return transactions;
     }
 
     @Override
@@ -153,7 +205,19 @@ public class TransactionServiceImpl implements TransactionService {
             throw new EntityNotFoundException("Transaction with id: " + id + " not found.");
         }
 
-        return optionalTransaction.get();
+        Transaction transaction = optionalTransaction.get();
+        Link process = linkTo(methodOn(TransactionController.class).process(transaction.getId(), null))
+                .withRel("set_on_process");
+        Link failed = linkTo(methodOn(TransactionController.class).process(transaction.getId(), null))
+                .withRel("set_failed");
+        Link completed = linkTo(methodOn(TransactionController.class).process(transaction.getId(), null))
+                .withRel("set_completed");
+
+        transaction.add(process);
+        transaction.add(failed);
+        transaction.add(completed);
+
+        return transaction;
     }
 
     @Override
@@ -178,6 +242,9 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         transaction.setStatus(transactionStatus);
+
+        Link self = linkTo(methodOn(TransactionController.class).getOne(transaction.getId())).withRel("self");
+        transaction.add(self);
 
         return transactionRepository.save(transaction);
     }

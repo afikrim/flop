@@ -22,6 +22,7 @@ import com.github.afikrim.flop.wallets.Wallet;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.hateoas.RepresentationModel;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -30,7 +31,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "transactions")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Transaction implements Serializable {
+public class Transaction extends RepresentationModel<Transaction> implements Serializable {
 
     private static final long serialVersionUID = 5175717418015260148L;
 
