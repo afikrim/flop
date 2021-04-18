@@ -50,7 +50,7 @@ public class TransactionController {
     public ResponseEntity<Response<Transaction>> storeByUser(@PathVariable Long userId, @RequestBody TransactionRequest transactionRequest) {
         User user = userService.getOne(userId);
 
-        Transaction transaction = transactionService.storeByUser(user, transactionRequest);
+        Transaction transaction = transactionService.storeTransfer(user, transactionRequest);
         Response<Transaction> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully store new transaction", transaction);
 
         Link all = linkTo(methodOn(this.getClass()).allByUser(userId)).withRel("all");

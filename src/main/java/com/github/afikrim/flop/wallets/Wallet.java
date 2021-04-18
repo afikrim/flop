@@ -1,6 +1,7 @@
 package com.github.afikrim.flop.wallets;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -56,7 +57,7 @@ public class Wallet extends RepresentationModel<Wallet> implements Serializable 
 
     @LazyCollection(LazyCollectionOption.FALSE)
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
-    private List<SystemWallet> systems;
+    private List<SystemWallet> systems = Collections.emptyList();
 
     public Integer getId() {
         return id;

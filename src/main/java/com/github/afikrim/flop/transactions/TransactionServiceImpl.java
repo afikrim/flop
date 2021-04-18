@@ -13,6 +13,7 @@ import javax.transaction.Transactional;
 import com.github.afikrim.flop.systemwallets.SystemWallet;
 import com.github.afikrim.flop.systemwallets.SystemWalletRepository;
 import com.github.afikrim.flop.users.User;
+import com.github.afikrim.flop.users.UserRepository;
 import com.github.afikrim.flop.userwallets.UserWallet;
 import com.github.afikrim.flop.userwallets.UserWalletRepository;
 import com.github.afikrim.flop.utils.exception.CustomException;
@@ -33,6 +34,9 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Autowired
     private TransactionRepository transactionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private UserWalletRepository userWalletRepository;
@@ -56,7 +60,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Transactional
     @Override
-    public Transaction storeByUser(User user, TransactionRequest transactionRequest) {
+    public Transaction storeTransfer(User user, TransactionRequest transactionRequest) {
         if (transactionRequest.getAmount() < 50000) {
             throw new CustomException("Transfer must be more than IDR 50,000", HttpStatus.BAD_REQUEST);
         }
@@ -68,17 +72,16 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         Optional<UserWallet> optionalDestination = userWalletRepository
-                .findByIdAndUserId(transactionRequest.getSource(), user.getId());
+                .findByIdAndUserId(transactionRequest.getDestination(), user.getId());
         if (optionalDestination.isEmpty()) {
             throw new EntityNotFoundException("Wallet with id " + transactionRequest.getDestination() + " not found.");
         }
 
         UserWallet destination = optionalDestination.get();
-        Optional<SystemWallet> optionalSource = systemWalletRepository
-                .findByWalletId(transactionRequest.getDestination());
+        Optional<SystemWallet> optionalSource = systemWalletRepository.findByWalletId(transactionRequest.getSource());
         if (optionalSource.isEmpty()) {
-            throw new EntityNotFoundException("System does not provide wallet with id "
-                    + transactionRequest.getDestination() + " or this wallet currently not ready.");
+            throw new EntityNotFoundException("System does not provide wallet with id " + transactionRequest.getSource()
+                    + " or this wallet currently not ready.");
         }
 
         SystemWallet source = optionalSource.get();
@@ -99,8 +102,10 @@ public class TransactionServiceImpl implements TransactionService {
 
         Transaction transaction = new Transaction();
         transaction.setUser(user);
-        transaction.setSource(source);
-        transaction.setDestination(destination);
+        transaction.setSource(source.getWallet());
+        transaction.setDestination(destination.getWallet());
+        transaction.setUserWallet(destination);
+        transaction.setType(TransactionType.TRANSFER);
         transaction.setAmount(transactionRequest.getAmount());
         transaction.setStatus(TransactionStatus.PENDING);
         transaction.setCreatedAt(new Date());
@@ -113,6 +118,40 @@ public class TransactionServiceImpl implements TransactionService {
 
         transaction.add(self);
         transaction.add(cancel);
+
+        return transactionRepository.save(transaction);
+    }
+
+    @Transactional
+    @Override
+    public Transaction storeTopup(TransactionRequest transactionRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails currentUser = (UserDetails) authentication.getPrincipal();
+        User user = userRepository.getUserByEmail(currentUser.getUsername());
+
+        Optional<SystemWallet> optionalDestination = systemWalletRepository
+                .findById(transactionRequest.getDestination().intValue());
+        if (optionalDestination.isEmpty()) {
+            throw new EntityNotFoundException("System does not provide wallet with id "
+                    + transactionRequest.getDestination() + " or this wallet currently not ready.");
+        }
+
+        SystemWallet destination = optionalDestination.get();
+
+        Transaction transaction = new Transaction();
+        transaction.setUser(user);
+        transaction.setDestination(destination.getWallet());
+        transaction.setSystemWallet(destination);
+        transaction.setType(TransactionType.TOPUP);
+        transaction.setAmount(transactionRequest.getAmount());
+        transaction.setStatus(TransactionStatus.COMPLETED);
+        transaction.setCreatedAt(new Date());
+        transaction.setUpdatedAt(new Date());
+
+        Link self = linkTo(methodOn(TransactionController.class).getOneByUser(user.getId(), transaction.getId()))
+                .withRel("self");
+
+        transaction.add(self);
 
         return transactionRepository.save(transaction);
     }

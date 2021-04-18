@@ -15,6 +15,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.afikrim.flop.systemwallets.SystemWallet;
 import com.github.afikrim.flop.users.User;
 import com.github.afikrim.flop.userwallets.UserWallet;
@@ -44,12 +45,20 @@ public class Transaction extends RepresentationModel<Transaction> implements Ser
     private User user;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "source")
-    private SystemWallet source;
+    @JoinColumn(name = "source_wallet_id")
+    private Wallet source;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "destination")
-    private UserWallet destination;
+    @JoinColumn(name = "destination_wallet_id")
+    private Wallet destination;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_wallet_id")
+    private UserWallet userWallet;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "system_wallet_id")
+    private SystemWallet systemWallet;
 
     @Column(name = "amount")
     private Long amount;
@@ -57,6 +66,10 @@ public class Transaction extends RepresentationModel<Transaction> implements Ser
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private TransactionStatus status = TransactionStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private TransactionType type;
 
     @CreatedDate
     @Column(name = "created_at")
@@ -83,18 +96,18 @@ public class Transaction extends RepresentationModel<Transaction> implements Ser
     }
 
     public Wallet getSource() {
-        return source.getWallet();
+        return source;
     }
 
-    public void setSource(SystemWallet source) {
+    public void setSource(Wallet source) {
         this.source = source;
     }
 
-    public UserWallet getDestination() {
+    public Wallet getDestination() {
         return destination;
     }
 
-    public void setDestination(UserWallet destination) {
+    public void setDestination(Wallet destination) {
         this.destination = destination;
     }
 
@@ -104,6 +117,14 @@ public class Transaction extends RepresentationModel<Transaction> implements Ser
 
     public void setAmount(Long amount) {
         this.amount = amount;
+    }
+
+    public TransactionType getType() {
+        return type;
+    }
+
+    public void setType(TransactionType type) {
+        this.type = type;
     }
 
     public TransactionStatus getStatus() {
@@ -128,6 +149,24 @@ public class Transaction extends RepresentationModel<Transaction> implements Ser
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @JsonProperty("user_wallet")
+    public UserWallet getUserWallet() {
+        return userWallet;
+    }
+
+    public void setUserWallet(UserWallet userWallet) {
+        this.userWallet = userWallet;
+    }
+
+    @JsonProperty("system_wallet")
+    public SystemWallet getSystemWallet() {
+        return systemWallet;
+    }
+
+    public void setSystemWallet(SystemWallet systemWallet) {
+        this.systemWallet = systemWallet;
     }
 
 }
