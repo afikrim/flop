@@ -141,7 +141,6 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = new Transaction();
         transaction.setUser(user);
         transaction.setDestination(destination.getWallet());
-        transaction.setSystemWallet(destination);
         transaction.setType(TransactionType.TOPUP);
         transaction.setAmount(transactionRequest.getAmount());
         transaction.setStatus(TransactionStatus.COMPLETED);
@@ -259,6 +258,7 @@ public class TransactionServiceImpl implements TransactionService {
         return transaction;
     }
 
+    @Transactional
     @Override
     public Transaction updateStatus(Long id, TransactionStatus transactionStatus) {
         Optional<Transaction> optionalTransaction = transactionRepository.findById(id);

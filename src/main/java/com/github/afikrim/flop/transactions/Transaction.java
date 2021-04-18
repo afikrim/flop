@@ -16,7 +16,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.afikrim.flop.systemwallets.SystemWallet;
 import com.github.afikrim.flop.users.User;
 import com.github.afikrim.flop.userwallets.UserWallet;
 import com.github.afikrim.flop.wallets.Wallet;
@@ -55,10 +54,6 @@ public class Transaction extends RepresentationModel<Transaction> implements Ser
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_wallet_id")
     private UserWallet userWallet;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "system_wallet_id")
-    private SystemWallet systemWallet;
 
     @Column(name = "amount")
     private Long amount;
@@ -158,15 +153,6 @@ public class Transaction extends RepresentationModel<Transaction> implements Ser
 
     public void setUserWallet(UserWallet userWallet) {
         this.userWallet = userWallet;
-    }
-
-    @JsonProperty("system_wallet")
-    public SystemWallet getSystemWallet() {
-        return systemWallet;
-    }
-
-    public void setSystemWallet(SystemWallet systemWallet) {
-        this.systemWallet = systemWallet;
     }
 
 }

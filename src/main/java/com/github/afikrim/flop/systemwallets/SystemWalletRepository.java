@@ -10,7 +10,7 @@ public interface SystemWalletRepository extends JpaRepository<SystemWallet, Inte
     @Query("SELECT sw FROM SystemWallet sw WHERE sw.phone = ?1 AND sw.wallet.id = ?2")
     public Optional<SystemWallet> findByPhoneAndWalletId(String phone, Integer walletId);
 
-    @Query(nativeQuery = true, value = "SELECT sw.* FROM system_wallets sw WHERE sw.wallet_id = :walletId AND sw.is_available = true ORDER BY sw.balance DESC LIMIT 1")
+    @Query("SELECT sw FROM SystemWallet sw WHERE sw.wallet.id = ?1 AND sw.isAvailable = true")
     public Optional<SystemWallet> findByWalletId(Integer walletId);
 
 }

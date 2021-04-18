@@ -10,9 +10,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.afikrim.flop.wallets.Wallet;
 
@@ -36,21 +37,18 @@ public class SystemWallet extends RepresentationModel<SystemWallet> implements S
     @Column(name = "id")
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "wallet_id")
     private Wallet wallet;
 
     @Column(name = "phone")
     private String phone;
 
-    @Column(name = "name")
-    private String name;
-
     @Column(name = "balance")
-    private Long balance;
+    private Long balance = 0L;
 
     @Column(name = "is_available")
-    private Boolean isAvailable;
+    private Boolean isAvailable = false;
 
     @CreatedDate
     @Column(name = "created_at")
@@ -68,6 +66,7 @@ public class SystemWallet extends RepresentationModel<SystemWallet> implements S
         this.id = id;
     }
 
+    @JsonIgnore
     public Wallet getWallet() {
         return wallet;
     }
@@ -82,14 +81,6 @@ public class SystemWallet extends RepresentationModel<SystemWallet> implements S
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Long getBalance() {

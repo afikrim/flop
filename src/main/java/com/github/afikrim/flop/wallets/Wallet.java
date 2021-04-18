@@ -1,16 +1,17 @@
 package com.github.afikrim.flop.wallets;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -55,9 +56,8 @@ public class Wallet extends RepresentationModel<Wallet> implements Serializable 
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
     private List<UserWallet> users;
 
-    @LazyCollection(LazyCollectionOption.FALSE)
-    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
-    private List<SystemWallet> systems = Collections.emptyList();
+    @OneToOne(mappedBy = "wallet", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private SystemWallet systemWallet;
 
     public Integer getId() {
         return id;
@@ -100,34 +100,13 @@ public class Wallet extends RepresentationModel<Wallet> implements Serializable 
         this.users = users;
     }
 
-    @JsonIgnore
-    public List<SystemWallet> getSystems() {
-        return systems;
+    @JsonProperty("system_wallet")
+    public SystemWallet getSystemWallet() {
+        return systemWallet;
     }
 
-    public void setSystems(List<SystemWallet> systems) {
-        this.systems = systems;
-    }
-
-    @JsonProperty("is_available")
-    public Boolean getIsAvailable() {
-        Long maxBalance = 0L;
-        for (SystemWallet system: systems) {
-            if (system.getBalance() > maxBalance) {
-                maxBalance = system.getBalance();
-            }
-        }
-
-        return maxBalance > 50000;
-    }
-
-    public Long getBalance() {
-        Long totalBalance = 0L;
-        for (SystemWallet system: systems) {
-            totalBalance += system.getBalance();
-        }
-
-        return totalBalance;
+    public void setSystemWallet(SystemWallet systemWallet) {
+        this.systemWallet = systemWallet;
     }
 
 }
