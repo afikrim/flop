@@ -11,6 +11,8 @@ import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 
+import com.github.afikrim.flop.mutations.Mutation;
+import com.github.afikrim.flop.mutations.MutationRepository;
 import com.github.afikrim.flop.systemwallets.SystemWallet;
 import com.github.afikrim.flop.systemwallets.SystemWalletRequest;
 import com.github.afikrim.flop.transactions.Transaction;
@@ -32,6 +34,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class WalletServiceImpl implements WalletService {
+
+    @Autowired
+    private MutationRepository mutationRepository;
 
     @Autowired
     private TransactionRepository transactionRepository;
@@ -234,7 +239,17 @@ public class WalletServiceImpl implements WalletService {
             systemWallet.setIsAvailable(true);
         }
 
+        Mutation mutation = new Mutation();
+        mutation.setCredit(amount);
+        mutation.setDebit(0L);
+        mutation.setBalance(systemWallet.getBalance());
+        mutation.setCreatedAt(new Date());
+        mutation.setUpdatedAt(new Date());
+
+        mutationRepository.save(mutation);
+
         Transaction transaction = new Transaction();
+        transaction.setMutation(mutation);
         transaction.setUser(user);
         transaction.setDestination(wallet);
         transaction.setType(TransactionType.TOPUP);
@@ -242,6 +257,7 @@ public class WalletServiceImpl implements WalletService {
         transaction.setStatus(TransactionStatus.COMPLETED);
         transaction.setCreatedAt(new Date());
         transaction.setUpdatedAt(new Date());
+        mutation.setTransaction(transaction);
 
         transactionRepository.save(transaction);
 

@@ -10,6 +10,8 @@ import java.util.Optional;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 
+import com.github.afikrim.flop.mutations.Mutation;
+import com.github.afikrim.flop.mutations.MutationRepository;
 import com.github.afikrim.flop.systemwallets.SystemWallet;
 import com.github.afikrim.flop.systemwallets.SystemWalletRepository;
 import com.github.afikrim.flop.users.User;
@@ -17,6 +19,7 @@ import com.github.afikrim.flop.users.UserRepository;
 import com.github.afikrim.flop.userwallets.UserWallet;
 import com.github.afikrim.flop.userwallets.UserWalletRepository;
 import com.github.afikrim.flop.utils.exception.CustomException;
+import com.github.afikrim.flop.wallets.Wallet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
@@ -28,6 +31,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
+
+    @Autowired
+    private MutationRepository mutationRepository;
 
     @Autowired
     private SystemWalletRepository systemWalletRepository;
@@ -278,6 +284,20 @@ public class TransactionServiceImpl implements TransactionService {
         int nextStatus = transactionStatus.ordinal();
         if (nextStatus < currentStatus) {
             throw new CustomException("Cannot modify status to previous status.", HttpStatus.BAD_REQUEST);
+        }
+
+        if (transactionStatus.equals(TransactionStatus.COMPLETED)) {
+            Wallet source = transaction.getSource();
+            Mutation mutation = new Mutation();
+            mutation.setTransaction(transaction);
+            mutation.setCredit(0L);
+            mutation.setDebit(transaction.getAmount());
+            mutation.setBalance(source.getSystemWallet().getBalance());
+            mutation.setCreatedAt(new Date());
+            mutation.setUpdatedAt(new Date());
+
+            mutationRepository.save(mutation);
+            transaction.setMutation(mutation);
         }
 
         transaction.setStatus(transactionStatus);

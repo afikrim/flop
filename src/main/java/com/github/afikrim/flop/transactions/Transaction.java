@@ -13,9 +13,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.afikrim.flop.mutations.Mutation;
 import com.github.afikrim.flop.users.User;
 import com.github.afikrim.flop.userwallets.UserWallet;
 import com.github.afikrim.flop.wallets.Wallet;
@@ -54,6 +57,9 @@ public class Transaction extends RepresentationModel<Transaction> implements Ser
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_wallet_id")
     private UserWallet userWallet;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Mutation mutation;
 
     @Column(name = "amount")
     private Long amount;
@@ -153,6 +159,15 @@ public class Transaction extends RepresentationModel<Transaction> implements Ser
 
     public void setUserWallet(UserWallet userWallet) {
         this.userWallet = userWallet;
+    }
+
+    @JsonIgnore
+    public Mutation getMutation() {
+        return mutation;
+    }
+
+    public void setMutation(Mutation mutation) {
+        this.mutation = mutation;
     }
 
 }
