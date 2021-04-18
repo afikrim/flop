@@ -61,9 +61,9 @@ public class WalletServiceImpl implements WalletService {
         wallet.setEnabled(false);
 
         Link update = linkTo(methodOn(WalletController.class).update(wallet.getCode(), null)).withRel("update");
-        Link delete = linkTo(methodOn(WalletController.class).destroy(wallet.getCode())).withRel("delete");
         Link enable = linkTo(methodOn(WalletController.class).enable(wallet.getCode())).withRel("enable");
         Link disable = linkTo(methodOn(WalletController.class).disable(wallet.getCode())).withRel("disable");
+        Link delete = linkTo(methodOn(WalletController.class).destroy(wallet.getCode())).withRel("delete");
 
         wallet.add(update);
         wallet.add(delete);

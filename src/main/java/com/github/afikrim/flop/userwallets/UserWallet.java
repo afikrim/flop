@@ -2,9 +2,7 @@ package com.github.afikrim.flop.userwallets;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,16 +11,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.afikrim.flop.transactions.Transaction;
 import com.github.afikrim.flop.users.User;
 import com.github.afikrim.flop.wallets.Wallet;
 
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.hateoas.RepresentationModel;
@@ -50,10 +44,6 @@ public class UserWallet extends RepresentationModel<UserWallet> implements Seria
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "wallet_id")
     private Wallet wallet;
-
-    @LazyCollection(LazyCollectionOption.FALSE)
-    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL)
-    private Set<Transaction> transactions;
 
     @Column(name = "phone")
     private String phone;
@@ -124,15 +114,6 @@ public class UserWallet extends RepresentationModel<UserWallet> implements Seria
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    @JsonIgnore
-    public Set<Transaction> getTransactions() {
-        return transactions;
-    }
-
-    public void setTransactions(Set<Transaction> transactions) {
-        this.transactions = transactions;
     }
 
 }

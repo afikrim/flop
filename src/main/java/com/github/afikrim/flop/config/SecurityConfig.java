@@ -63,8 +63,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .disable()//
                 .authorizeRequests()//
                 .antMatchers(HttpMethod.GET, "/").permitAll()//
-                .antMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/register", "/v1/wallets").permitAll()//
-                .antMatchers(HttpMethod.GET, "/v1/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
+                .antMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/register").permitAll()//
+                .antMatchers(HttpMethod.GET, "/v1/users/**", "/v1/wallets").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
                 .antMatchers(HttpMethod.POST, "/v1/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
                 .antMatchers(HttpMethod.PUT, "/v1/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//
                 .antMatchers(HttpMethod.DELETE, "/v1/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")//

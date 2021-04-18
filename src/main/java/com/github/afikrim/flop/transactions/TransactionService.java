@@ -8,7 +8,9 @@ public interface TransactionService {
 
     public List<Transaction> getAllByUser(User user);
 
-    public Transaction storeByUser(User user, TransactionRequest transactionRequest);
+    public Transaction storeTransfer(User user, TransactionRequest transactionRequest);
+
+    public Transaction storeTopup(TransactionRequest transactionRequest);
 
     public Transaction getOneByUser(User user, Long id);
 

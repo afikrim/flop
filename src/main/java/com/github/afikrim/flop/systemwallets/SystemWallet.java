@@ -2,9 +2,7 @@ package com.github.afikrim.flop.systemwallets;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,16 +11,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.afikrim.flop.transactions.Transaction;
 import com.github.afikrim.flop.wallets.Wallet;
 
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.hateoas.RepresentationModel;
@@ -46,10 +39,6 @@ public class SystemWallet extends RepresentationModel<SystemWallet> implements S
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "wallet_id")
     private Wallet wallet;
-
-    @LazyCollection(LazyCollectionOption.FALSE)
-    @OneToMany(mappedBy = "source", cascade = CascadeType.ALL)
-    private List<Transaction> transactions;
 
     @Column(name = "phone")
     private String phone;
@@ -142,15 +131,6 @@ public class SystemWallet extends RepresentationModel<SystemWallet> implements S
 
     public void decreaseBalance(Long amount) {
         balance -= amount;
-    }
-
-    @JsonIgnore
-    public List<Transaction> getTransactions() {
-        return transactions;
-    }
-
-    public void setTransactions(List<Transaction> transactions) {
-        this.transactions = transactions;
     }
 
 }

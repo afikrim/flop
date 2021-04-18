@@ -30,10 +30,12 @@ public class SystemWalletServiceImpl implements SystemWalletService {
     public List<SystemWallet> getAll() {
         List<SystemWallet> systemWallets = systemWalletRepository.findAll();
 
-        for (SystemWallet systemWallet: systemWallets) {
+        for (SystemWallet systemWallet : systemWallets) {
             Link self = linkTo(methodOn(SystemWalletController.class).get(systemWallet.getId())).withRel("self");
-            Link update = linkTo(methodOn(SystemWalletController.class).update(systemWallet.getId(), null)).withRel("update");
-            Link delete = linkTo(methodOn(SystemWalletController.class).destroy(systemWallet.getId())).withRel("delete");
+            Link update = linkTo(methodOn(SystemWalletController.class).update(systemWallet.getId(), null))
+                    .withRel("update");
+            Link delete = linkTo(methodOn(SystemWalletController.class).destroy(systemWallet.getId()))
+                    .withRel("delete");
 
             systemWallet.add(self);
             systemWallet.add(update);
@@ -51,9 +53,11 @@ public class SystemWalletServiceImpl implements SystemWalletService {
         }
 
         Wallet wallet = optionalWallet.get();
-        Optional<SystemWallet> optionalSystemWallet = systemWalletRepository.findByPhoneAndWalletId(systemWalletRequest.getPhone(), systemWalletRequest.getWalletId());
+        Optional<SystemWallet> optionalSystemWallet = systemWalletRepository
+                .findByPhoneAndWalletId(systemWalletRequest.getPhone(), systemWalletRequest.getWalletId());
         if (optionalSystemWallet.isPresent()) {
-            throw new EntityExistsException("Wallet with type " + wallet.getName() + " and phone number " + systemWalletRequest.getPhone() + " already exists");
+            throw new EntityExistsException("Wallet with type " + wallet.getName() + " and phone number "
+                    + systemWalletRequest.getPhone() + " already exists");
         }
 
         SystemWallet systemWallet = new SystemWallet();
@@ -65,7 +69,8 @@ public class SystemWalletServiceImpl implements SystemWalletService {
         systemWallet.setUpdatedAt(new Date());
 
         Link self = linkTo(methodOn(SystemWalletController.class).get(systemWallet.getId())).withRel("self");
-        Link update = linkTo(methodOn(SystemWalletController.class).update(systemWallet.getId(), null)).withRel("update");
+        Link update = linkTo(methodOn(SystemWalletController.class).update(systemWallet.getId(), null))
+                .withRel("update");
         Link delete = linkTo(methodOn(SystemWalletController.class).destroy(systemWallet.getId())).withRel("delete");
 
         systemWallet.add(self);
@@ -84,7 +89,8 @@ public class SystemWalletServiceImpl implements SystemWalletService {
 
         SystemWallet systemWallet = optionalSystemWallet.get();
 
-        Link update = linkTo(methodOn(SystemWalletController.class).update(systemWallet.getId(), null)).withRel("update");
+        Link update = linkTo(methodOn(SystemWalletController.class).update(systemWallet.getId(), null))
+                .withRel("update");
         Link delete = linkTo(methodOn(SystemWalletController.class).destroy(systemWallet.getId())).withRel("delete");
 
         systemWallet.add(update);
@@ -101,10 +107,12 @@ public class SystemWalletServiceImpl implements SystemWalletService {
         }
 
         SystemWallet systemWallet = optionalSystemWallet.get();
-        if (systemWalletRequest.getWalletId() != null && !systemWalletRequest.getWalletId().equals(systemWallet.getWallet().getId())) {
+        if (systemWalletRequest.getWalletId() != null
+                && !systemWalletRequest.getWalletId().equals(systemWallet.getWallet().getId())) {
             Optional<Wallet> optionalWallet = walletRepository.findById(systemWalletRequest.getWalletId());
             if (optionalWallet.isEmpty()) {
-                throw new EntityNotFoundException("Wallet with id: " + systemWalletRequest.getWalletId() + " not found.");
+                throw new EntityNotFoundException(
+                        "Wallet with id: " + systemWalletRequest.getWalletId() + " not found.");
             }
 
             Wallet wallet = optionalWallet.get();
@@ -155,7 +163,8 @@ public class SystemWalletServiceImpl implements SystemWalletService {
         }
 
         Link self = linkTo(methodOn(SystemWalletController.class).get(systemWallet.getId())).withRel("self");
-        Link update = linkTo(methodOn(SystemWalletController.class).update(systemWallet.getId(), null)).withRel("update");
+        Link update = linkTo(methodOn(SystemWalletController.class).update(systemWallet.getId(), null))
+                .withRel("update");
         Link delete = linkTo(methodOn(SystemWalletController.class).destroy(systemWallet.getId())).withRel("delete");
 
         systemWallet.add(self);

@@ -5,6 +5,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
 
+import com.github.afikrim.flop.transactions.TransactionRequest;
+import com.github.afikrim.flop.transactions.TransactionService;
 import com.github.afikrim.flop.utils.response.Response;
 import com.github.afikrim.flop.utils.response.ResponseCode;
 
@@ -29,10 +31,14 @@ public class SystemWalletController {
     @Autowired
     SystemWalletService systemWalletService;
 
+    @Autowired
+    TransactionService transactionService;
+
     @GetMapping
     public ResponseEntity<Response<List<SystemWallet>>> index() {
         List<SystemWallet> systemWallets = systemWalletService.getAll();
-        Response<List<SystemWallet>> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully get all wallets", systemWallets);
+        Response<List<SystemWallet>> response = new Response<>(true, ResponseCode.HTTP_OK,
+                "Successfully get all wallets", systemWallets);
 
         Link store = linkTo(methodOn(this.getClass()).store(null)).withRel("store");
 
@@ -44,7 +50,8 @@ public class SystemWalletController {
     @PostMapping
     public ResponseEntity<Response<SystemWallet>> store(@RequestBody SystemWalletRequest systemWalletRequest) {
         SystemWallet systemWallet = systemWalletService.store(systemWalletRequest);
-        Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully store new wallet", systemWallet);
+        Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully store new wallet",
+                systemWallet);
 
         Link index = linkTo(methodOn(this.getClass()).index()).withRel("all");
 
@@ -56,7 +63,8 @@ public class SystemWalletController {
     @GetMapping(value = "/{id}")
     public ResponseEntity<Response<SystemWallet>> get(@PathVariable Integer id) {
         SystemWallet systemWallet = systemWalletService.getOne(id);
-        Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully get a wallet", systemWallet);
+        Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully get a wallet",
+                systemWallet);
 
         Link store = linkTo(methodOn(this.getClass()).store(null)).withRel("store");
         Link index = linkTo(methodOn(this.getClass()).index()).withRel("all");
@@ -68,9 +76,11 @@ public class SystemWalletController {
     }
 
     @PutMapping(value = "/{id}")
-    public ResponseEntity<Response<SystemWallet>> update(@PathVariable Integer id, @RequestBody SystemWalletRequest systemWalletRequest) {
+    public ResponseEntity<Response<SystemWallet>> update(@PathVariable Integer id,
+            @RequestBody SystemWalletRequest systemWalletRequest) {
         SystemWallet systemWallet = systemWalletService.updateOne(id, systemWalletRequest);
-        Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully update a wallet", systemWallet);
+        Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully update a wallet",
+                systemWallet);
 
         Link store = linkTo(methodOn(this.getClass()).store(null)).withRel("store");
         Link index = linkTo(methodOn(this.getClass()).index()).withRel("all");
@@ -84,7 +94,8 @@ public class SystemWalletController {
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Response<SystemWallet>> destroy(@PathVariable Integer id) {
         systemWalletService.deleteOne(id);
-        Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully delete a wallet", null);
+        Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully delete a wallet",
+                null);
 
         Link store = linkTo(methodOn(this.getClass()).store(null)).withRel("store");
         Link index = linkTo(methodOn(this.getClass()).index()).withRel("all");
@@ -96,9 +107,18 @@ public class SystemWalletController {
     }
 
     @PostMapping(value = "/{id}/deposit")
-    public ResponseEntity<Response<SystemWallet>> deposit(@PathVariable Integer id, @RequestBody SystemWalletTopupRequest systemWalletTopupRequest) {
-        SystemWallet systemWallet = systemWalletService.deposit(id, systemWalletTopupRequest);
-        Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK, "Successfully topup wallet balance", systemWallet);
+    public ResponseEntity<Response<SystemWallet>> deposit(@PathVariable Integer id,
+            @RequestBody SystemWalletTopupRequest systemWalletTopupRequest) {
+        SystemWallet systemWallet = systemWalletService.getOne(id);
+
+        Long walletId = systemWallet.getId().longValue();
+        TransactionRequest transactionRequest = new TransactionRequest(walletId, null,
+                systemWalletTopupRequest.getAmount());
+        transactionService.storeTopup(transactionRequest);
+
+        systemWallet = systemWalletService.deposit(id, systemWalletTopupRequest);
+        Response<SystemWallet> response = new Response<>(true, ResponseCode.HTTP_OK,
+                "Successfully topup wallet balance", systemWallet);
 
         Link store = linkTo(methodOn(this.getClass()).store(null)).withRel("store");
         Link index = linkTo(methodOn(this.getClass()).index()).withRel("all");
